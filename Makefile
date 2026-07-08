@@ -14,3 +14,4 @@ run: build/$(TOP).out log
 clean:
 	@rm -rf build log
 	@echo -e "\033[1;33m>\033[0m Cleaned build and log directories."
+	
