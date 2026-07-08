@@ -2,7 +2,7 @@ export SHELL=/bin/bash
 
 build log:
 	@mkdir -p $@ 
-	@echo "*" > $@.gitignore
+	@echo "*" > $@/.gitignorecle
 
 build/$(TOP).out: build source/$(TOP).sv
 	@iverilog -o build/$(TOP).out source/$(TOP).sv
