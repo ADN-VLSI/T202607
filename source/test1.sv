@@ -1,7 +1,7 @@
 module test;
 
     initial begin
-        $display("Hello, Foez vai from ADN!");
+        $display("Hello, World!");
         $finish;
     end
     
