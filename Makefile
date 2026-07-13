@@ -5,6 +5,7 @@ TOP := test
 BUILD_DIR := $(CURDIR)/build
 LOG_DIR := $(CURDIR)/log
 
+FILELIST += $(shell find $(CURDIR)/interface -name "*.sv")
 FILELIST += $(shell find $(CURDIR)/source -name "*.sv")
 FILELIST += $(shell find $(CURDIR)/testbench -name "*.sv")
 
