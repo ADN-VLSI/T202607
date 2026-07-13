@@ -1,10 +1,12 @@
-interface val_rdy_if (
+interface val_rdy_if #(
+    parameter int DATA_WIDTH = 8
+) (
     input logic rst_n,
     input logic clk
 );
 
-  logic [7:0] data;
-  logic       valid;
-  logic       ready;
+  logic [DATA_WIDTH-1:0] data;
+  logic                  valid;
+  logic                  ready;
 
 endinterface

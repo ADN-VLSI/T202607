@@ -28,6 +28,11 @@ run:
 	@echo -e "\033[1;33m>\033[0m Running $(TOP)..."
 	@cd $(BUILD_DIR) && xsim snap_$(TOP) -runall -log $(LOG_DIR)/xsim_$(TOP)_$(shell date +%Y%m%d_%H%M%S).log
 
+.PHONY: all
+all:
+	@make -s clean
+	@make -s run
+
 .PHONY: clean
 clean:
 	@echo -e "\033[1;33m>\033[0m Cleaning $(BUILD_DIR) and $(LOG_DIR) directories."
