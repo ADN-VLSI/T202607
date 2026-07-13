@@ -30,5 +30,5 @@ run:
 
 .PHONY: clean
 clean:
+	@echo -e "\033[1;33m>\033[0m Cleaning $(BUILD_DIR) and $(LOG_DIR) directories."
 	@rm -rf $(BUILD_DIR) $(LOG_DIR)
-	@echo -e "\033[1;33m>\033[0m Cleaned $(BUILD_DIR) and $(LOG_DIR) directories."
