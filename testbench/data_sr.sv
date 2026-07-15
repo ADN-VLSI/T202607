@@ -27,8 +27,8 @@ module data_sr;
   end
 
 
-  data_sender frjgnedfkn (.intf(intf1));
-  data_receiver ejdvjngvf (.intf(intf1));
+  data_sender sndr (.intf(intf1));
+  data_receiver scvr (.intf(intf1));
 
 
   initial begin
