@@ -12,10 +12,12 @@ module test;
   end
 
   initial begin
+    $timeformat(-7, 3, "USA", 15);
     $dumpfile("test.vcd");
-    $dumpvars(0, test);
-    $display("Hello, World!");
-
+    $dumpvars(1, test.l1.l2);
+    #100ns;
+    $error("Hello, World! [%0t]", $realtime);
+    $display("WE SURSIVED");
     #100ns $finish;
   end
 
