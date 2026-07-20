@@ -1,5 +1,8 @@
 module condition_test;
 
+  initial $display("\033[7;33m------------ Condition Test started ------------\033[0m");
+  final   $display("\033[7;33m------------- Condition Test ended -------------\033[0m");
+
   initial begin
     bit [4:0] a[$];
 
