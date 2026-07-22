@@ -1,6 +1,6 @@
 module fun_task_test_myself;
      mailbox #(int) mbx = new(20);
-
+ami modify korlam
      //send task
      task automatic send(int cnt = 5);
         repeat (cnt) begin
