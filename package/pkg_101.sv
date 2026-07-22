@@ -6,7 +6,7 @@ package pkg_101;
     logic [3:0] phone;
   } my_struct_t;
 
-  int my_phone = 84093530285;
+  int my_phone = 530285;
 
   function int multiple(input int a, input int b);
     return a * b;
