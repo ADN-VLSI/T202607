@@ -59,8 +59,6 @@ interface apb_if #(
     end
   endtask
 
-
-
   task automatic do_transaction(input logic [ADDR_WIDTH-1:0] addr, input logic write,
                                 input logic [DATA_WIDTH-1:0] wdata,
                                 output logic [DATA_WIDTH-1:0] rdata);

@@ -29,13 +29,43 @@ module apb_mem_tb;
       .prdata_o (intf.prdata)
   );
 
+  task automatic apply_reset();
+    #100ns;
+    pclk    <= 1'b0;
+    presetn <= 1'b0;
+    intf.apply_reset(1);
+    #100ns;
+    presetn <= 1'b1;
+    #100ns;
+  endtask
+
+  task automatic start_clock();
+    fork
+      forever begin
+        #5ns pclk <= 1'b0;
+        #5ns pclk <= 1'b1;
+      end
+    join_none
+    repeat (5) @(posedge pclk);
+  endtask
+
   initial begin
+    int rdata;
+
     $timeformat(-9, 0, "ns");
     $dumpfile("apb_mem_tb.vcd");
     $dumpvars(0, apb_mem_tb);
 
-    // ADD WRITE AND READ TESTS
-    // YOUR CODE HERE
+    apply_reset();
+    start_clock();
+
+    intf.write(0, 'h12345678);
+    intf.write(4, 'h90ABCDEF);
+
+    intf.read(0, rdata);
+    $display("Read from address 0: %h", rdata);
+    intf.read(4, rdata);
+    $display("Read from address 4: %h", rdata);
 
     #100ns;
     $finish;

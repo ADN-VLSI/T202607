@@ -1,0 +1,42 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Mon Jul 27 06:50:52 2026
+[*]
+[dumpfile] "C:\Users\foeza\Documents\T202607\build\apb_mem_tb.vcd"
+[dumpfile_mtime] "Mon Jul 27 06:49:33 2026"
+[dumpfile_size] 4303
+[savefile] "C:\Users\foeza\Documents\T202607\wave.gtkw"
+[timestart] 0
+[size] 1536 793
+[pos] -191 -186
+*-16.350332 375900 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] apb_mem_tb.
+[sst_width] 197
+[signals_width] 162
+[sst_expanded] 1
+[sst_vpaned_height] 221
+@28
+apb_mem_tb.intf.presetn
+apb_mem_tb.intf.pclk
+@200
+-
+@28
+apb_mem_tb.intf.psel
+apb_mem_tb.intf.penable
+@200
+-
+@22
+apb_mem_tb.intf.paddr[4:0]
+@28
+[color] 3
+apb_mem_tb.intf.pwrite
+@22
+apb_mem_tb.intf.pwdata[31:0]
+@200
+-
+@28
+apb_mem_tb.intf.pready
+@22
+apb_mem_tb.intf.prdata[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
