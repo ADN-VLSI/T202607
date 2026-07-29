@@ -69,7 +69,9 @@ interface uart_if;
     // PARITY BIT
     if (parity_en) begin
       bit parity_bit;
-      parity_bit = ^data[data_bits-1:0];
+      for (int i = 0; i < data_bits; i++) begin
+        parity_bit ^= data[i];
+      end
       val <= parity_type ? ~parity_bit : parity_bit;
       #(tp);
     end
