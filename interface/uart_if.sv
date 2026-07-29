@@ -41,18 +41,18 @@ interface uart_if;
     input bit PARITY_TYPE = parity_type,
     input bit EXTRA_STOP = extra_stop,
     input int DATA_BITS = data_bits
-    );
+  );
   /* verilog_format: on */
 
     realtime tp;
 
     tp = 1s / BAUD_RATE;
 
-    baud_rate   = BAUD_RATE;
-    parity_en   = PARITY_EN;
+    baud_rate = BAUD_RATE;
+    parity_en = PARITY_EN;
     parity_type = PARITY_TYPE;
-    extra_stop  = EXTRA_STOP;
-    data_bits   = DATA_BITS;
+    extra_stop = EXTRA_STOP;
+    data_bits = DATA_BITS;
 
     drv <= 1;
 
@@ -61,15 +61,76 @@ interface uart_if;
     #(tp);
 
     // DATA BITS
-      // -- YOUR CODE HERE --
+    for (int i = 0; i < data_bits; i++) begin
+      val <= data[i];
+      #(tp);
+    end
 
     // PARITY BIT
-      // -- YOUR CODE HERE --
+    if (parity_en) begin
+      bit parity_bit;
+      parity_bit = ^data[data_bits-1:0];
+      val <= parity_type ? ~parity_bit : parity_bit;
+      #(tp);
+    end
 
     // STOPS BITS
-      // -- YOUR CODE HERE --
-    
+    for (int i = 0; i <= extra_stop; i++) begin
+      val <= 1;
+      #(tp);
+    end
+
     drv <= 0;
+
+  endtask
+
+  /* verilog_format: off */
+  task automatic recv(
+    output int data,
+    output bit parity,
+    input int BAUD_RATE = baud_rate,
+    input bit PARITY_EN = parity_en,
+    input bit PARITY_TYPE = parity_type,
+    input bit EXTRA_STOP = extra_stop,
+    input int DATA_BITS = data_bits
+  );
+  /* verilog_format: on */
+
+    realtime tp;
+
+    tp = 1s / BAUD_RATE;
+
+    baud_rate = BAUD_RATE;
+    parity_en = PARITY_EN;
+    parity_type = PARITY_TYPE;
+    extra_stop = EXTRA_STOP;
+    data_bits = DATA_BITS;
+
+    wait (line == 0);  // Wait for start bit
+    
+    // Start bit check
+    #(tp / 2);
+    if (line != 0) begin
+      $error("UART: Start bit not detected. Probably Baud rate mismatch / protocol violation");
+    end
+
+    // Data bits
+    for (int i = 0; i < data_bits; i++) begin
+      #(tp);
+      data[i] = line;
+    end
+
+    // Parity bit
+    if (parity_en) begin
+      #(tp);
+      parity = line;
+    end
+
+    // Stop bit
+    #(tp);
+    if (line != 1) begin
+      $error("UART: Stop bit not detected. Probably Baud rate mismatch / protocol violation / configuration mismatch");
+    end
 
   endtask
 
