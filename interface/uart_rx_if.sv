@@ -1,13 +1,14 @@
 `timescale 1ns/1ps
+
 interface uart_rx_if;
 
   /////////////////////////////////////////////////////////
-  // SIGNALS
+  // SIGNALS & BUS
   /////////////////////////////////////////////////////////
   tri1 line;
 
   /////////////////////////////////////////////////////////
-  // CONFIGURATION
+  // CONFIGURATION PARAMETERS
   /////////////////////////////////////////////////////////
   int  baud_rate   = 9600;
   bit  parity_en   = 0;
@@ -16,7 +17,7 @@ interface uart_rx_if;
   int  data_bits   = 8;
 
   /////////////////////////////////////////////////////////
-  // RECEIVE METHOD
+  // RECEIVER TASK
   /////////////////////////////////////////////////////////
   /* verilog_format: off */
   task automatic recv(
@@ -40,33 +41,34 @@ interface uart_rx_if;
     extra_stop  = EXTRA_STOP;
     data_bits   = DATA_BITS;
 
-    // Clear output data buffer
+    // Reset received data buffer
     data = 0;
 
-    wait (line == 0);  // Wait for start bit
+    // Wait for falling edge of Start Bit
+    wait (line == 0);  
     
-    // Start bit check (sample mid-bit)
+    // Check Start Bit at mid-bit offset
     #(tp / 2);
     if (line != 0) begin
-      $error("UART: Start bit not detected. Potential baud rate mismatch / protocol violation.");
+      $error("UART RX: Glitch or Start bit mismatch detected!");
     end
 
-    // Data bits sampling
+    // Sample Data Bits at mid-bit center
     for (int i = 0; i < data_bits; i++) begin
       #(tp);
       data[i] = line;
     end
 
-    // Parity bit sampling
+    // Sample Parity Bit (if enabled)
     if (parity_en) begin
       #(tp);
       parity = line;
     end
 
-    // Stop bit check
+    // Verify Stop Bit
     #(tp);
     if (line != 1) begin
-      $error("UART: Stop bit not detected. Framing error.");
+      $error("UART RX: Stop bit error (Framing Fault)!");
     end
 
   endtask

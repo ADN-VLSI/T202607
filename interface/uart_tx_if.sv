@@ -1,13 +1,14 @@
 `timescale 1ns/1ps
+
 interface uart_tx_if;
 
   /////////////////////////////////////////////////////////
-  // SIGNALS
+  // SIGNALS & BUS
   /////////////////////////////////////////////////////////
   tri1 line;
 
   /////////////////////////////////////////////////////////
-  // CONFIGURATION
+  // CONFIGURATION PARAMETERS
   /////////////////////////////////////////////////////////
   int  baud_rate   = 9600;
   bit  parity_en   = 0;
@@ -16,18 +17,15 @@ interface uart_tx_if;
   int  data_bits   = 8;
 
   /////////////////////////////////////////////////////////
-  // CONTROL BITS
+  // DRIVER INTERNAL CONTROL
   /////////////////////////////////////////////////////////
   bit  drv;
   bit  val;
 
-  /////////////////////////////////////////////////////////
-  // DRIVE LOGIC
-  /////////////////////////////////////////////////////////
   assign line = drv ? val : 'z;
 
   /////////////////////////////////////////////////////////
-  // TRANSMIT METHOD
+  // TRANSMITTER TASK
   /////////////////////////////////////////////////////////
   /* verilog_format: off */
   task automatic send(
@@ -52,17 +50,17 @@ interface uart_tx_if;
 
     drv <= 1;
 
-    // START BIT
+    // 1. START BIT (Driven Low)
     val <= 0;
     #(tp);
 
-    // DATA BITS
+    // 2. DATA BITS (LSB First)
     for (int i = 0; i < data_bits; i++) begin
       val <= data[i];
       #(tp);
     end
 
-    // PARITY BIT
+    // 3. PARITY BIT (Optional)
     if (parity_en) begin
       bit parity_bit;
       for (int i = 0; i < data_bits; i++) begin
@@ -72,7 +70,7 @@ interface uart_tx_if;
       #(tp);
     end
 
-    // STOP BITS
+    // 4. STOP BITS (Driven High)
     for (int i = 0; i <= extra_stop; i++) begin
       val <= 1;
       #(tp);
