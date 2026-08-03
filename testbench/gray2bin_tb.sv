@@ -4,6 +4,9 @@ module gray2bin_tb;
 
   parameter int WIDTH = 4;
 
+  // Global pass/fail flag
+  bit test_failed = 0; 
+
   gray2bin_if #(.WIDTH(WIDTH)) intf();
 
   gray2bin dut (
@@ -23,6 +26,7 @@ module gray2bin_tb;
     $dumpfile("gray2bin_sim.vcd");
     $dumpvars(0, gray2bin_tb);
 
+    // Run test cases
     apply_and_compare(4'b0000);
     apply_and_compare(4'b0011);
     apply_and_compare(4'b0110);
@@ -30,8 +34,11 @@ module gray2bin_tb;
     apply_and_compare(4'b1111);
     apply_and_compare(4'b1000);
 
-    $display(" ok! ");
-
+    if (test_failed == 0) begin
+      $display("           TEST SUCCESSFUL! All matched.          ");
+    end else begin
+      $display("           TEST UNSUCCESSFUL! Mismatch found.     ");
+    end
 
     #10;
     $finish;
@@ -45,13 +52,8 @@ module gray2bin_tb;
 
     expected_bin = tb_gray2bin(intf.gray);
 
-    if (intf.bin === expected_bin) begin
-      $display("[MATCH] Input Gray: %b | RTL Bin: %b | TB Expected: %b",
-               intf.gray, intf.bin, expected_bin);
-    end
-    else begin
-      $error("[MISMATCH] Input Gray: %b | RTL Bin: %b | TB Expected: %b",
-             intf.gray, intf.bin, expected_bin);
+    if (intf.bin !== expected_bin) begin
+      test_failed = 1;
     end
   endtask
 
