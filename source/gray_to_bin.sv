@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module gray2bin #(
+module gray_to_bin #(
     parameter WIDTH = 8
 ) (
     input  logic [WIDTH-1:0] gray_i,
