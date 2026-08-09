@@ -1,22 +1,20 @@
-`timescale 1ns/1ps
+`timescale 1ns / 1ps
 
-module gray2bin_tb;
+module gray_to_bin_tb;
 
   parameter int WIDTH = 4;
 
   // Global pass/fail flag
-  bit test_failed = 0; 
+  bit test_failed = 0;
 
-  gray2bin_if #(.WIDTH(WIDTH)) intf();
+  gray2bin_if #(.WIDTH(WIDTH)) intf ();
 
-  gray2bin dut (
-    .vif(intf)
-  );
+  gray2bin dut (.vif(intf));
 
   function automatic logic [WIDTH-1:0] tb_gray2bin(input logic [WIDTH-1:0] g);
     logic [WIDTH-1:0] b;
     b[WIDTH-1] = g[WIDTH-1];
-    for (int i = WIDTH-2; i >= 0; i--) begin
+    for (int i = WIDTH - 2; i >= 0; i--) begin
       b[i] = g[i] ^ b[i+1];
     end
     return b;

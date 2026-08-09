@@ -1,42 +1,42 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Jul 27 06:50:52 2026
+[*] Sun Aug 09 05:25:42 2026
 [*]
-[dumpfile] "C:\Users\foeza\Documents\T202607\build\apb_mem_tb.vcd"
-[dumpfile_mtime] "Mon Jul 27 06:49:33 2026"
-[dumpfile_size] 4303
+[dumpfile] "C:\Users\foeza\Documents\T202607\build\uart_transmitter_tb.vcd"
+[dumpfile_mtime] "Sun Aug 09 05:18:47 2026"
+[dumpfile_size] 4034
 [savefile] "C:\Users\foeza\Documents\T202607\wave.gtkw"
-[timestart] 0
+[timestart] 400200
 [size] 1536 793
-[pos] -191 -186
-*-16.350332 375900 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] apb_mem_tb.
+[pos] -35 -35
+*-15.990007 640000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] uart_transmitter_tb.
 [sst_width] 197
-[signals_width] 162
+[signals_width] 247
 [sst_expanded] 1
 [sst_vpaned_height] 221
 @28
-apb_mem_tb.intf.presetn
-apb_mem_tb.intf.pclk
-@200
--
-@28
-apb_mem_tb.intf.psel
-apb_mem_tb.intf.penable
+uart_transmitter_tb.arst_ni
+uart_transmitter_tb.clk_i
 @200
 -
 @22
-apb_mem_tb.intf.paddr[4:0]
+uart_transmitter_tb.data_i[7:0]
 @28
-[color] 3
-apb_mem_tb.intf.pwrite
-@22
-apb_mem_tb.intf.pwdata[31:0]
+uart_transmitter_tb.num_bits_i[1:0]
+uart_transmitter_tb.parity_en_i
+uart_transmitter_tb.parity_type_i
+uart_transmitter_tb.extra_stop_i
+@29
+uart_transmitter_tb.data_valid_i
+@28
+uart_transmitter_tb.data_ready_o
 @200
 -
 @28
-apb_mem_tb.intf.pready
-@22
-apb_mem_tb.intf.prdata[31:0]
+uart_transmitter_tb.tx_o
+@24
+uart_transmitter_tb.u_dut.state[2:0]
+uart_transmitter_tb.u_dut.state_next[2:0]
 [pattern_trace] 1
 [pattern_trace] 0
