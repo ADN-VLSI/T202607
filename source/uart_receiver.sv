@@ -41,7 +41,7 @@ module uart_receiver #(
   logic parity[4];
   logic parity_bit;
 
-  logic sample_count;
+  logic sample_now;
 
   logic data_valid;
   logic data_valid_next;
