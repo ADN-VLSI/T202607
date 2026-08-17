@@ -1,0 +1,230 @@
+module uart_receiver (
+    input logic arst_ni,
+    input logic clk_i,
+
+    input logic rx_i,
+
+    input logic [1:0] num_bits_i,
+    input logic       parity_en_i,
+    input logic       parity_type_i,
+    input logic       extra_stop_i,
+
+    output logic [7:0] data_o,
+    output logic       data_valid_o,
+    output logic       parity_error_o,
+    output logic       frame_error_o
+);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// TYPE DEFINITIONS
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+typedef enum logic [2:0] {
+    IDLE,       // 0
+    START,      // 1
+    DATA,       // 2
+    PARITY,     // 3
+    STOP,       // 4
+    EXTRA_STOP  // 5
+} rx_state_t;
+
+rx_state_t state;
+rx_state_t state_next;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// SIGNALS
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+logic [2:0] data_count;
+logic [2:0] data_count_next;
+
+logic [7:0] data_next;
+
+logic parity;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// PARITY
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+always_comb begin
+    parity = ^data_o;
+end
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// DATA COUNT NEXT
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+always_comb begin
+
+    case (state)
+
+        DATA:
+            data_count_next = data_count + 1'b1;
+
+        default:
+            data_count_next = 3'd0;
+
+    endcase
+
+end
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// STATE NEXT
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+always_comb begin
+
+    state_next      = state;
+    data_next       = data_o;
+
+    data_valid_o    = 1'b0;
+    parity_error_o  = 1'b0;
+    frame_error_o   = 1'b0;
+
+    case (state)
+
+        //////////////////////////////////////////////////////////////////////////////
+        // IDLE
+        //////////////////////////////////////////////////////////////////////////////
+
+        IDLE: begin
+
+            // UART idle line is HIGH.
+            // LOW means start bit detected.
+
+            if (!rx_i)
+                state_next = START;
+
+        end
+
+        //////////////////////////////////////////////////////////////////////////////
+        // START
+        //////////////////////////////////////////////////////////////////////////////
+
+        START: begin
+
+            // Confirm start bit
+
+            if (!rx_i)
+                state_next = DATA;
+            else
+                state_next = IDLE;
+
+        end
+
+        //////////////////////////////////////////////////////////////////////////////
+        // DATA
+        //////////////////////////////////////////////////////////////////////////////
+
+        DATA: begin
+
+            // UART sends LSB first
+            data_next[data_count] = rx_i;
+
+            if (data_count == (3'd4 + num_bits_i)) begin
+
+                if (parity_en_i)
+                    state_next = PARITY;
+                else
+                    state_next = STOP;
+
+            end
+
+        end
+
+        //////////////////////////////////////////////////////////////////////////////
+        // PARITY
+        //////////////////////////////////////////////////////////////////////////////
+
+        PARITY: begin
+
+            if (parity_type_i) begin
+
+                // Inverted parity
+
+                if (rx_i != ~parity)
+                    parity_error_o = 1'b1;
+
+            end
+            else begin
+
+                // Normal parity
+
+                if (rx_i != parity)
+                    parity_error_o = 1'b1;
+
+            end
+
+            state_next = STOP;
+
+        end
+
+        //////////////////////////////////////////////////////////////////////////////
+        // STOP
+        //////////////////////////////////////////////////////////////////////////////
+
+        STOP: begin
+
+            // Stop bit must be HIGH
+
+            if (!rx_i)
+                frame_error_o = 1'b1;
+
+            if (extra_stop_i)
+                state_next = EXTRA_STOP;
+            else begin
+                state_next   = IDLE;
+                data_valid_o = 1'b1;
+            end
+
+        end
+
+        //////////////////////////////////////////////////////////////////////////////
+        // EXTRA STOP
+        //////////////////////////////////////////////////////////////////////////////
+
+        EXTRA_STOP: begin
+
+            if (!rx_i)
+                frame_error_o = 1'b1;
+
+            state_next   = IDLE;
+            data_valid_o = 1'b1;
+
+        end
+
+        //////////////////////////////////////////////////////////////////////////////
+        // DEFAULT
+        //////////////////////////////////////////////////////////////////////////////
+
+        default:
+            state_next = IDLE;
+
+    endcase
+
+end
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// SEQUENTIALS
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+always_ff @(posedge clk_i or negedge arst_ni) begin
+
+    if (!arst_ni) begin
+
+        state      <= IDLE;
+        data_count <= 3'd0;
+        data_o     <= 8'h00;
+
+    end
+    else begin
+
+        state      <= state_next;
+        data_count <= data_count_next;
+        data_o     <= data_next;
+
+    end
+
+end
+
+endmodule
