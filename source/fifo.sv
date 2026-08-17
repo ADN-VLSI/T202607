@@ -30,15 +30,18 @@ module fifo (
     // ------------------------------------------------------------
 
     // 3 bits:
-    // bit [1:0] = memory address
-    // bit [2]   = wrap-around bit
+    //
+    // wr_ptr[1:0] = memory address
+    // wr_ptr[2]   = wrap-around bit
+    //
+    // Same for rd_ptr.
 
     logic [2:0] wr_ptr;
     logic [2:0] rd_ptr;
 
 
     // ------------------------------------------------------------
-    // INTERNAL CONTROL SIGNALS
+    // INTERNAL SIGNALS
     // ------------------------------------------------------------
 
     logic write_en;
@@ -49,15 +52,24 @@ module fifo (
 
 
     // ------------------------------------------------------------
-    // EMPTY DETECTION
+    // EMPTY
     // ------------------------------------------------------------
+
+    // Write pointer and read pointer are equal
+    // when there are zero items.
 
     assign empty = (wr_ptr == rd_ptr);
 
 
     // ------------------------------------------------------------
-    // FULL DETECTION
+    // FULL
     // ------------------------------------------------------------
+
+    // FIFO is full when:
+    //
+    // lower address bits are equal
+    // AND
+    // wrap-around bits are different.
 
     assign full =
         (wr_ptr[1:0] == rd_ptr[1:0]) &&
@@ -68,33 +80,57 @@ module fifo (
     // WRITE INTERFACE
     // ------------------------------------------------------------
 
-    // FIFO can accept data when it is not full
+    // FIFO can receive data when it is not full.
+
     assign data_in_ready_o = !full;
 
-    // A write happens when valid and ready are both 1
-    assign write_en = data_in_valid_i && data_in_ready_o;
+
+    // A write happens only when:
+    //
+    // valid = 1
+    // ready = 1
+
+    assign write_en =
+        data_in_valid_i &&
+        data_in_ready_o;
 
 
     // ------------------------------------------------------------
     // READ INTERFACE
     // ------------------------------------------------------------
 
-    // FIFO has valid output data when it is not empty
+    // FIFO has data when it is not empty.
+
     assign data_out_valid_o = !empty;
 
-    // Output data comes from the location pointed to by rd_ptr
-    assign data_out_o = mem[rd_ptr[1:0]];
 
-    // A read happens when valid and ready are both 1
-    assign read_en = data_out_valid_o && data_out_ready_i;
+    // Data at the current read pointer
+    // is placed on the output.
+
+    assign data_out_o =
+        mem[rd_ptr[1:0]];
+
+
+    // A read happens only when:
+    //
+    // valid = 1
+    // ready = 1
+
+    assign read_en =
+        data_out_valid_o &&
+        data_out_ready_i;
 
 
     // ------------------------------------------------------------
     // COUNT
     // ------------------------------------------------------------
 
-    // Number of items = write pointer - read pointer
-    assign count_o = wr_ptr - rd_ptr;
+    // Number of items =
+    //
+    // write pointer - read pointer
+
+    assign count_o =
+        wr_ptr - rd_ptr;
 
 
     // ------------------------------------------------------------
@@ -102,9 +138,13 @@ module fifo (
     // ------------------------------------------------------------
 
     always_ff @(posedge clk_i) begin
+
         if (write_en) begin
+
             mem[wr_ptr[1:0]] <= data_in_i;
+
         end
+
     end
 
 
@@ -115,11 +155,15 @@ module fifo (
     always_ff @(posedge clk_i or negedge arst_ni) begin
 
         if (!arst_ni) begin
+
             wr_ptr <= 3'b000;
+
         end
 
         else if (write_en) begin
+
             wr_ptr <= wr_ptr + 1'b1;
+
         end
 
     end
@@ -132,11 +176,15 @@ module fifo (
     always_ff @(posedge clk_i or negedge arst_ni) begin
 
         if (!arst_ni) begin
+
             rd_ptr <= 3'b000;
+
         end
 
         else if (read_en) begin
+
             rd_ptr <= rd_ptr + 1'b1;
+
         end
 
     end
