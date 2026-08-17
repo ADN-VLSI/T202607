@@ -112,7 +112,7 @@ module fifo_tb;
         data_in_i = value;
 
         // Tell FIFO that input data is valid
-        data_in_valid_i = 1;
+        data_in_valid_i <= 1;
 
         // Wait until FIFO accepts it
         do begin
