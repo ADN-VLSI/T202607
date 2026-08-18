@@ -20,41 +20,35 @@ module sync_fifo #(
 );
 
 	logic [DATA_WIDTH-1:0] mem [0:FIFO_DEPTH-1];
+	logic [ADDR_WIDTH:0] WP;
+	logic [ADDR_WIDTH:0] RP;
 
-	logic [ADDR_WIDTH-1:0] WP;
-	logic [ADDR_WIDTH-1:0] RP;
-	logic [ADDR_WIDTH:0]   count;
+	wire empty = (WP == RP);
+	wire full = (WP[ADDR_WIDTH] != RP[ADDR_WIDTH]) &&
+            	(WP[ADDR_WIDTH-1:0] == RP[ADDR_WIDTH-1:0]);
 
 	wire write_fire = data_in_valid_i && data_in_ready_o;
 	wire read_fire  = data_out_valid_o && data_out_ready_i;
 
-	assign data_in_ready_o  = (count < FIFO_DEPTH);
-	assign data_out_valid_o = (count > 0);
-	assign count_o      	= count;
+	assign data_in_ready_o  = !full;
+	assign data_out_valid_o = !empty;
+	assign count_o      	= WP - RP;
 
-	assign data_out_o   	= mem[RP];
+	assign data_out_o = mem[RP[ADDR_WIDTH-1:0]];
 
 	always_ff @(posedge clk_i or negedge arst_ni) begin
     	if (!arst_ni) begin
-        	WP	<= '0;
-        	RP	<= '0;
-        	count <= '0;
+        	WP <= '0;
+        	RP <= '0;
     	end else begin
         	if (write_fire) begin
-            	mem[WP] <= data_in_i;
-            	WP  	<= (WP == FIFO_DEPTH - 1) ? '0 : WP + 1'b1;
+            	mem[WP[ADDR_WIDTH-1:0]] <= data_in_i;
+            	WP <= WP + 1'b1;
         	end
 
         	if (read_fire) begin
-            	RP  	<= (RP == FIFO_DEPTH - 1) ? '0 : RP + 1'b1;
+            	RP <= RP + 1'b1;
         	end
-
-        	case ({write_fire, read_fire})
-            	2'b10:   count <= count + 1'b1;
-            	2'b01:   count <= count - 1'b1;
-            	default count <= count;
-        	endcase
-           	 
     	end
 	end
 

@@ -75,6 +75,7 @@ module tb_sync_fifo;
         data_in_i        = '0;
         data_in_valid_i  = 0;
         data_out_ready_i = 0;
+        
 
         #25;
         arst_ni = 1;
