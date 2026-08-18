@@ -10,6 +10,7 @@ FILELIST += $(shell find $(CURDIR)/interface -name "*.sv")
 FILELIST += $(shell find $(CURDIR)/source -name "*.sv")
 FILELIST += $(shell find $(CURDIR)/testbench -name "*.sv")
 
+
 EW_O := | grep -iE "Error:|Warning:" --color=auto || true
 EWHL := | grep -iE "Error:|Warning:|" --color=auto
 
