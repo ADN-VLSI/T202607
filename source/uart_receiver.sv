@@ -146,7 +146,7 @@ module uart_receiver #(
   always_ff @(posedge clk_i or negedge arst_ni) begin
     if (!arst_ni) begin
       data_count <= 0;
-    end else begin
+    end else if (sample_now) begin
       data_count <= data_count_next;
     end
   end
