@@ -48,22 +48,15 @@ module fifo #(
         if (!arst_ni) begin
             wp <= 0;
             rp <= 0;
+            count <= 0;
         end else if (data_in_valid_i && data_in_ready_o) begin 
             mem[wp[ADDR_WIDTH-1:0]] <= data_in_i;
             wp <= wp + 1;
+            count <= count + 1;
         end else if (data_out_valid_o && data_out_ready_i) begin
             data_out_o <= mem[rp[ADDR_WIDTH-1:0]];
             rp <= rp + 1;
-        end
-    end
-
-    always_ff @(posedge clk_i or negedge arst_ni) begin
-        if (!arst_ni) begin
-            count <= 0;
-        end else if (data_in_valid_i && data_in_ready_o) begin
-            count <= count + 1;
-        end else if (data_out_valid_o && data_out_ready_i) begin
-            count <= count - 1;        
+            count <= count - 1;
         end
     end
 
