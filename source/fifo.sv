@@ -30,6 +30,7 @@ module fifo #(
     assign count_o = count; 
     assign data_in_ready_o = (count != 2**ADDR_WIDTH) ? 1'b1 : 1'b0;
     assign data_out_valid_o = (count != 0) ? 1'b1 : 1'b0;
+    assign data_out_o = mem[rp[ADDR_WIDTH-1:0]]; // read is always asynchronous
 
     always_ff @(posedge clk_i or negedge arst_ni) begin
         if (!arst_ni) begin
@@ -41,7 +42,7 @@ module fifo #(
             wp <= wp + 1;
             count <= count + 1;
         end else if (data_out_valid_o && data_out_ready_i) begin
-            data_out_o <= mem[rp[ADDR_WIDTH-1:0]];
+            // data_out_o <= mem[rp[ADDR_WIDTH-1:0]];
             rp <= rp + 1;
             count <= count - 1;
         end
