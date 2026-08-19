@@ -28,21 +28,8 @@ module fifo #(
     logic [ADDR_WIDTH:0] wp, rp, count; // count shows the number of slots that are full
 
     assign count_o = count; 
-
-    always_comb begin 
-        if (count != 2**ADDR_WIDTH) begin
-            data_in_ready_o = 1'b1;
-        end else begin
-            data_in_ready_o = 1'b0;
-        end
-
-        if (count != 0) begin
-            data_out_valid_o = 1'b1;
-        end else begin
-            data_out_valid_o = 1'b0;
-        end 
-    end
-
+    assign data_in_ready_o = (count != 2**ADDR_WIDTH) ? 1'b1 : 1'b0;
+    assign data_out_valid_o = (count != 0) ? 1'b1 : 1'b0;
 
     always_ff @(posedge clk_i or negedge arst_ni) begin
         if (!arst_ni) begin
