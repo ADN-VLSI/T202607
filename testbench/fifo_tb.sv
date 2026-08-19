@@ -220,6 +220,8 @@ module fifo_tb;
     // Main test sequence
     // ---------------------------------------------------------
     initial begin
+        $dumpfile("fifo.vcd");
+        $dumpvars;
         test_reset();
         test_single_push_pop();
         test_fill_to_full();
