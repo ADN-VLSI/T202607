@@ -34,9 +34,13 @@ module fifo #(
   assign full = (wr_ptr[ADDR_WIDTH] != rd_ptr[ADDR_WIDTH]) &&
                 (wr_ptr[ADDR_WIDTH-1:0] == rd_ptr[ADDR_WIDTH-1:0]);
 
-  assign data_in_ready_o  = !full;
-  assign data_out_valid_o = !empty;
+   //assign data_in_ready_o  = (!full || (full && data_out_ready_i));
+  
+   //assign data_out_valid_o = !empty;
+  assign data_in_ready_o  = arst_ni && (!full || (full && data_out_ready_i));
 
+  assign data_out_valid_o = arst_ni && (!empty);
+  
   assign write_en = data_in_valid_i && data_in_ready_o;
   assign read_en  = data_out_valid_o && data_out_ready_i;
 
@@ -46,6 +50,9 @@ module fifo #(
       rd_ptr     <= '0;
       count_o    <= '0;
       data_out_o <= '0;
+     
+      
+
     end
     else begin
       if (write_en) begin
