@@ -78,6 +78,39 @@ module tb_sync_fifo;
             $display("[PASS] RESET");
     endtask
 
+    task automatic write_during_reset_test();
+        $display("[TEST] WRITE DURING RESET");
+
+        arst_ni = 0;
+
+        @(negedge clk_i);
+        data_in_i = 8'hFF;
+        data_in_valid_i = 1;
+        data_out_ready_i = 0;
+
+        @(posedge clk_i);
+        #1;
+
+        if (count_o !== 0) begin
+            $error("[RESET WRITE] count = %0d, expected 0", count_o);
+            error_count++;
+        end
+
+        if (data_out_valid_o !== 0) begin
+            $error("[RESET WRITE] valid = %0b, expected 0", data_out_valid_o);
+            error_count++;
+        end
+
+        @(negedge clk_i);
+        data_in_valid_i = 0;
+        arst_ni = 1;
+
+        @(posedge clk_i);
+        #1;
+
+        if (count_o === 0 && data_out_valid_o === 0)
+            $display("[PASS] WRITE DURING RESET - write was ignored");
+    endtask
 
     task automatic no_operation_test();
         int old_count;
@@ -102,7 +135,6 @@ module tb_sync_fifo;
             $display("[PASS] 00");
         end
     endtask
-
 
     task automatic write_only_test(input logic [DATA_WIDTH-1:0] data);
         $display("[TEST] WRITE ONLY (10)");
@@ -131,7 +163,6 @@ module tb_sync_fifo;
         if (data_in_ready_o || count_o == expected_queue.size())
             $display("[PASS] 10 - Wrote 0x%0h", data);
     endtask
-
 
     task automatic read_only_test();
         logic [DATA_WIDTH-1:0] expected_data;
@@ -174,7 +205,6 @@ module tb_sync_fifo;
         if (data_out_o === expected_data)
             $display("[PASS] 01 - Read 0x%0h", expected_data);
     endtask
-
 
     task automatic simultaneous_write_read_test(input logic [DATA_WIDTH-1:0] new_data);
         logic [DATA_WIDTH-1:0] expected_data;
@@ -234,7 +264,6 @@ module tb_sync_fifo;
         data_out_ready_i = 0;
     endtask
 
-
     task automatic fifo_order_test();
         logic [DATA_WIDTH-1:0] expected_data;
 
@@ -282,7 +311,6 @@ module tb_sync_fifo;
 
         $display("[PASS] FIFO ORDER");
     endtask
-
 
     task automatic empty_test();
         logic [DATA_WIDTH-1:0] expected_data;
@@ -341,7 +369,6 @@ module tb_sync_fifo;
             $display("[PASS] EMPTY");
     endtask
 
-
     task automatic full_test();
         $display("[TEST] FULL");
 
@@ -389,7 +416,6 @@ module tb_sync_fifo;
             $display("[PASS] FULL - count=%0d", count_o);
     endtask
 
-
     task automatic seventeenth_data_test();
         logic [DATA_WIDTH-1:0] data17;
 
@@ -424,7 +450,6 @@ module tb_sync_fifo;
         @(negedge clk_i);
         data_in_valid_i = 0;
     endtask
-
 
     task automatic full_simultaneous_test();
         logic [DATA_WIDTH-1:0] expected_data;
@@ -485,7 +510,6 @@ module tb_sync_fifo;
         data_out_ready_i = 0;
     endtask
 
-
     initial begin
         arst_ni = 0;
         data_in_i = '0;
@@ -493,6 +517,8 @@ module tb_sync_fifo;
         data_out_ready_i = 0;
 
         reset_test();
+
+        write_during_reset_test();
 
         no_operation_test();
 
