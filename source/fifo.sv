@@ -82,7 +82,7 @@ module fifo (
 
     // FIFO can receive data when it is not full.
 
-    assign data_in_ready_o = !full;
+    assign data_in_ready_o = !full || read_en;
 
 
     // A write happens only when:
