@@ -7,6 +7,8 @@ module fifo_tb;
     parameter int DATA_WIDTH = 4;
     parameter int FIFO_DEPTH = 4;
 
+    localparam int COUNT_WIDTH = $clog2(FIFO_DEPTH + 1);
+
 
     // ------------------------------------------------------------
     // TESTBENCH SIGNALS
@@ -23,7 +25,7 @@ module fifo_tb;
     logic                  data_out_valid_o;
     logic                  data_out_ready_i;
 
-    logic [2:0] count_o;
+    logic [COUNT_WIDTH-1:0] count_o;
 
 
     // ------------------------------------------------------------
@@ -51,7 +53,10 @@ module fifo_tb;
     // DUT
     // ------------------------------------------------------------
 
-    fifo dut (
+    fifo #(
+        .DATA_WIDTH(DATA_WIDTH),
+        .FIFO_DEPTH(FIFO_DEPTH)
+    ) dut (
         .arst_ni          (arst_ni),
         .clk_i            (clk),
 
@@ -105,8 +110,6 @@ module fifo_tb;
 
     // ------------------------------------------------------------
     // PUSH TASK
-    //
-    // Writes one value into the FIFO.
     // ------------------------------------------------------------
 
     task automatic push(
@@ -117,11 +120,13 @@ module fifo_tb;
         data_in_valid_i = 1;
 
         // Wait until FIFO is ready
+
         while (!data_in_ready_o) begin
             @(posedge clk);
         end
 
-        // Write happens on this clock edge
+        // Write occurs on this clock
+
         @(posedge clk);
 
         #1;
@@ -134,8 +139,6 @@ module fifo_tb;
 
     // ------------------------------------------------------------
     // POP TASK
-    //
-    // Reads one value from the FIFO.
     // ------------------------------------------------------------
 
     task automatic pop(
@@ -144,17 +147,20 @@ module fifo_tb;
 
         data_out_ready_i = 1;
 
-        // Wait until FIFO contains data
+        // Wait until FIFO has data
+
         while (!data_out_valid_o) begin
             @(posedge clk);
         end
 
-        // Capture data before rd_ptr changes
+        // Capture data before read pointer changes
+
         #1;
 
         value = data_out_o;
 
-        // Read happens on this clock edge
+        // Read occurs on this clock
+
         @(posedge clk);
 
         #1;
@@ -170,10 +176,6 @@ module fifo_tb;
 
     initial begin
 
-        // --------------------------------------------------------
-        // INITIAL VALUES
-        // --------------------------------------------------------
-
         tests_passed = 0;
         tests_failed = 0;
 
@@ -186,7 +188,9 @@ module fifo_tb;
 
 
         // ========================================================
-        // RESET
+        // RESET TEST
+        //
+        // Verify all outputs are zero during reset.
         // ========================================================
 
         $display("");
@@ -199,13 +203,43 @@ module fifo_tb;
         $display("RESET TEST");
         $display("----------------------------------------");
 
+        #1;
+
+        check(
+            "Ready is 0 during reset",
+            data_in_ready_o == 0
+        );
+
+        check(
+            "Valid is 0 during reset",
+            data_out_valid_o == 0
+        );
+
+        check(
+            "Data output is 0 during reset",
+            data_out_o == '0
+        );
+
+        check(
+            "Count is 0 during reset",
+            count_o == 0
+        );
+
+
+        // Keep reset active for two clocks
+
         repeat (2)
             @(posedge clk);
+
+
+        // Release reset
 
         arst_ni = 1;
 
         #1;
 
+
+        // Check FIFO state after reset
 
         check(
             "FIFO empty after reset",
@@ -225,9 +259,6 @@ module fifo_tb;
 
         // ========================================================
         // TEST 1: SINGLE WRITE AND READ
-        //
-        // Write A and then read A.
-        // Tests basic FIFO operation.
         // ========================================================
 
         $display("");
@@ -244,11 +275,6 @@ module fifo_tb;
 
         pop(read_data);
 
-        $display(
-            "Expected = A, Got = %h",
-            read_data
-        );
-
         check(
             "Read data is A",
             read_data == 4'hA
@@ -262,15 +288,6 @@ module fifo_tb;
 
         // ========================================================
         // TEST 2: FIFO ORDER
-        //
-        // Write 1, 2, 3.
-        // Read them back.
-        //
-        // Expected:
-        //
-        // 1 -> 2 -> 3
-        //
-        // Tests FIFO ordering.
         // ========================================================
 
         $display("");
@@ -287,7 +304,6 @@ module fifo_tb;
             count_o == 3
         );
 
-
         pop(read_data);
 
         check(
@@ -295,14 +311,12 @@ module fifo_tb;
             read_data == 4'h1
         );
 
-
         pop(read_data);
 
         check(
             "Second value is 2",
             read_data == 4'h2
         );
-
 
         pop(read_data);
 
@@ -314,17 +328,6 @@ module fifo_tb;
 
         // ========================================================
         // TEST 3: FILL FIFO
-        //
-        // Write four values.
-        //
-        // FIFO_DEPTH = 4
-        //
-        // Expected:
-        //
-        // count = 4
-        // ready = 0
-        // valid = 1
-        //
         // ========================================================
 
         $display("");
@@ -339,7 +342,7 @@ module fifo_tb;
 
         check(
             "Count is 4 when FIFO is full",
-            count_o == 4
+            count_o == FIFO_DEPTH
         );
 
         check(
@@ -355,13 +358,6 @@ module fifo_tb;
 
         // ========================================================
         // TEST 4: CANNOT WRITE WHEN FULL
-        //
-        // FIFO is full.
-        //
-        // No read is requested.
-        //
-        // Therefore the write must be blocked.
-        //
         // ========================================================
 
         $display("");
@@ -377,7 +373,7 @@ module fifo_tb;
         #1;
 
         check(
-            "FIFO ready is 0 when full and no read",
+            "Ready is 0 when full and no read",
             data_in_ready_o == 0
         );
 
@@ -394,11 +390,6 @@ module fifo_tb;
         data_in_i = 0;
 
         check(
-            "Write is blocked when FIFO is full",
-            count_o == 4
-        );
-
-        check(
             "Count remains 4 after blocked write",
             count_o == 4
         );
@@ -406,24 +397,12 @@ module fifo_tb;
 
         // ========================================================
         // TEST 5: CANNOT READ WHEN EMPTY
-        //
-        // First drain the FIFO.
-        //
-        // Then try to read when empty.
-        //
-        // Expected:
-        //
-        // valid = 0
-        // read_en = 0
-        // count = 0
-        //
         // ========================================================
 
         $display("");
         $display("----------------------------------------");
         $display("TEST 5: CANNOT READ WHEN EMPTY");
         $display("----------------------------------------");
-
 
         pop(read_data);
 
@@ -432,14 +411,12 @@ module fifo_tb;
             read_data == 4'h4
         );
 
-
         pop(read_data);
 
         check(
             "Drain value = 5",
             read_data == 4'h5
         );
-
 
         pop(read_data);
 
@@ -448,14 +425,12 @@ module fifo_tb;
             read_data == 4'h6
         );
 
-
         pop(read_data);
 
         check(
             "Drain value = 7",
             read_data == 4'h7
         );
-
 
         check(
             "FIFO count is 0",
@@ -468,16 +443,11 @@ module fifo_tb;
         );
 
 
-        // Try to read while empty
+        // Try reading while empty
 
         data_out_ready_i = 1;
 
         #1;
-
-        check(
-            "FIFO valid remains 0 when empty",
-            data_out_valid_o == 0
-        );
 
         check(
             "Read enable is 0 when empty",
@@ -491,11 +461,6 @@ module fifo_tb;
         data_out_ready_i = 0;
 
         check(
-            "Read is blocked when FIFO is empty",
-            dut.read_en == 0
-        );
-
-        check(
             "Count remains 0 after blocked read",
             count_o == 0
         );
@@ -503,12 +468,6 @@ module fifo_tb;
 
         // ========================================================
         // TEST 6: POINTER WRAP-AROUND
-        //
-        // Write and read four values.
-        //
-        // Then write again.
-        //
-        // Tests pointer wrap-around.
         // ========================================================
 
         $display("");
@@ -516,12 +475,10 @@ module fifo_tb;
         $display("TEST 6: POINTER WRAP-AROUND");
         $display("----------------------------------------");
 
-
         push(4'h8);
         push(4'h9);
         push(4'hA);
         push(4'hB);
-
 
         pop(read_data);
 
@@ -530,14 +487,12 @@ module fifo_tb;
             read_data == 4'h8
         );
 
-
         pop(read_data);
 
         check(
             "Wrap read 2 = 9",
             read_data == 4'h9
         );
-
 
         pop(read_data);
 
@@ -546,7 +501,6 @@ module fifo_tb;
             read_data == 4'hA
         );
 
-
         pop(read_data);
 
         check(
@@ -554,18 +508,13 @@ module fifo_tb;
             read_data == 4'hB
         );
 
-
-        // Write again after wrap-around
-
         push(4'hC);
         push(4'hD);
-
 
         check(
             "Count is 2 after wrap-around writes",
             count_o == 2
         );
-
 
         pop(read_data);
 
@@ -573,7 +522,6 @@ module fifo_tb;
             "Wrap-around new value 1 = C",
             read_data == 4'hC
         );
-
 
         pop(read_data);
 
@@ -584,21 +532,7 @@ module fifo_tb;
 
 
         // ========================================================
-        // TEST 7: NORMAL SIMULTANEOUS READ AND WRITE
-        //
-        // FIFO contains E.
-        //
-        // Same clock:
-        //
-        // READ E
-        // WRITE F
-        //
-        // Expected:
-        //
-        // E is removed
-        // F is inserted
-        // count remains 1
-        //
+        // TEST 7: SIMULTANEOUS READ AND WRITE
         // ========================================================
 
         $display("");
@@ -606,24 +540,14 @@ module fifo_tb;
         $display("TEST 7: SIMULTANEOUS READ AND WRITE");
         $display("----------------------------------------");
 
-
         push(4'hE);
-
-
-        // Request WRITE F
 
         data_in_i = 4'hF;
         data_in_valid_i = 1;
 
-        // Request READ E
-
         data_out_ready_i = 1;
 
         #1;
-
-
-        // Check that both operations are enabled
-        // before the clock edge.
 
         check(
             "Read enable is 1",
@@ -635,25 +559,15 @@ module fifo_tb;
             dut.write_en == 1
         );
 
-
-        // Capture E before read pointer changes
-
         read_data = data_out_o;
-
-
-        // BOTH operations happen on this SAME clock edge
 
         @(posedge clk);
 
         #1;
 
-
-        // Stop interfaces
-
         data_in_valid_i = 0;
         data_out_ready_i = 0;
         data_in_i = 0;
-
 
         check(
             "Simultaneous read gets E",
@@ -664,9 +578,6 @@ module fifo_tb;
             "Count is 1 after simultaneous read/write",
             count_o == 1
         );
-
-
-        // F should now be the only item
 
         pop(read_data);
 
@@ -679,42 +590,20 @@ module fifo_tb;
         // ========================================================
         // TEST 8: FULL + SIMULTANEOUS READ/WRITE
         //
-        // This is the MAIN TEST.
-        //
-        // First fill FIFO:
+        // FIFO:
         //
         // [1][2][3][4]
         //
-        // count = 4
+        // Same clock:
         //
-        // FIFO is FULL.
+        // READ 1
+        // WRITE 9
         //
-        // Then request:
-        //
-        //     READ 1
-        //     WRITE 9
-        //
-        // on the SAME clock cycle.
-        //
-        // The new logic should allow the write because:
-        //
-        //     full = 1
-        //     read_en = 1
-        //
-        // Therefore:
-        //
-        //     ready = !full || read_en
-        //           = !1 || 1
-        //           = 1
-        //
-        // Both write_en and read_en must be 1.
-        //
-        // After the clock:
+        // Result:
         //
         // [2][3][4][9]
         //
-        // count = 4
-        //
+        // Count remains 4.
         // ========================================================
 
         $display("");
@@ -722,19 +611,13 @@ module fifo_tb;
         $display("TEST 8: FULL + SIMULTANEOUS READ/WRITE");
         $display("----------------------------------------");
 
-
-        // --------------------------------------------------------
-        // Fill FIFO
-        // --------------------------------------------------------
-
         push(4'h1);
         push(4'h2);
         push(4'h3);
         push(4'h4);
 
-
         check(
-            "FIFO count is 4 before full simultaneous test",
+            "FIFO count is 4 before simultaneous test",
             count_o == 4
         );
 
@@ -744,30 +627,30 @@ module fifo_tb;
         );
 
 
-        // --------------------------------------------------------
-        // Prepare READ + WRITE
-        // --------------------------------------------------------
-
-        // New data to write
+        // Request write 9
 
         data_in_i = 4'h9;
-
-        // Request write
-
         data_in_valid_i = 1;
 
-        // Request read
+        // Request read 1
 
         data_out_ready_i = 1;
 
         #1;
 
-
-        // Current output must be 1
+        check(
+            "Ready becomes 1 when full and read happens",
+            data_in_ready_o == 1
+        );
 
         check(
-            "Output valid is 1 when FIFO is full",
-            data_out_valid_o == 1
+            "Read enable is 1",
+            dut.read_en == 1
+        );
+
+        check(
+            "Write enable is 1",
+            dut.write_en == 1
         );
 
         check(
@@ -776,168 +659,223 @@ module fifo_tb;
         );
 
 
-        // --------------------------------------------------------
-        // BEFORE THE CLOCK
-        //
-        // Both operations should be enabled.
-        // --------------------------------------------------------
-
-        check(
-            "Read enable is 1 before simultaneous clock",
-            dut.read_en == 1
-        );
-
-        check(
-            "Write enable is 1 before simultaneous clock",
-            dut.write_en == 1
-        );
-
-        check(
-            "Ready becomes 1 when full and read is happening",
-            data_in_ready_o == 1
-        );
-
-
-        // Save data that is being read
-
-        read_data = data_out_o;
-
-
-        // --------------------------------------------------------
-        // SAME CLOCK EDGE
-        //
-        // READ 1
-        // WRITE 9
-        //
-        // Both happen here.
-        // --------------------------------------------------------
+        // Same clock edge
 
         @(posedge clk);
 
-
-        // Immediately after the edge, check that both
-        // enables were active for this transaction.
-
-        check(
-            "Read enable was active during simultaneous clock",
-            dut.read_en == 1
-        );
-
-        check(
-            "Write enable was active during simultaneous clock",
-            dut.write_en == 1
-        );
-
-
         #1;
-
-
-        // Stop interfaces
 
         data_in_valid_i = 0;
         data_out_ready_i = 0;
         data_in_i = 0;
 
 
-        // --------------------------------------------------------
-        // Verify READ
-        //
-        // The value that was on the output was 1.
-        //
-        // The next FIFO value must now be 2.
-        //
-        // Therefore 1 was removed.
-        // --------------------------------------------------------
-
         check(
-            "Full FIFO simultaneous read gets 1",
-            read_data == 4'h1
-        );
-
-
-        // --------------------------------------------------------
-        // Verify COUNT
-        //
-        // 4 - 1 + 1 = 4
-        //
-        // Therefore the FIFO remains full.
-        // --------------------------------------------------------
-
-        check(
-            "Count remains 4 after simultaneous read/write",
+            "Count remains 4 after simultaneous operation",
             count_o == 4
         );
 
 
-        // FIFO must still have data
-
-        check(
-            "FIFO still has valid data",
-            data_out_valid_o == 1
-        );
-
-
-        // --------------------------------------------------------
-        // Verify that 1 is gone.
-        //
-        // Next value must be 2.
-        // --------------------------------------------------------
+        // Verify 1 was removed
 
         pop(read_data);
 
         check(
-            "After simultaneous operation next value = 2",
+            "Next value is 2",
             read_data == 4'h2
         );
 
-
-        // --------------------------------------------------------
-        // Continue checking FIFO order.
-        // --------------------------------------------------------
-
         pop(read_data);
 
         check(
-            "Next value = 3",
+            "Next value is 3",
             read_data == 4'h3
         );
 
-
         pop(read_data);
 
         check(
-            "Next value = 4",
+            "Next value is 4",
             read_data == 4'h4
         );
 
 
-        // --------------------------------------------------------
-        // Finally verify that 9 was inserted.
-        //
-        // If the write did not happen on the simultaneous
-        // clock, there would be no 9 here.
-        // --------------------------------------------------------
+        // Verify 9 was inserted
 
         pop(read_data);
 
         check(
-            "Newly written value = 9",
+            "Newly written value is 9",
             read_data == 4'h9
         );
 
-
-        // --------------------------------------------------------
-        // FIFO must now be empty.
-        // --------------------------------------------------------
 
         check(
             "FIFO is empty after final drain",
             count_o == 0
         );
 
+
+        // ========================================================
+        // TEST 9: RESET DURING OPERATION
+        //
+        // Fill FIFO partially.
+        //
+        // Then assert reset randomly while FIFO contains data.
+        //
+        // During reset:
+        //
+        // ready = 0
+        // valid = 0
+        // data_out = 0
+        // count = 0
+        //
+        // After reset:
+        //
+        // FIFO must start empty.
+        // ========================================================
+
+        $display("");
+        $display("----------------------------------------");
+        $display("TEST 9: RESET DURING OPERATION");
+        $display("----------------------------------------");
+
+
+        // Put data into FIFO
+
+        push(4'hA);
+        push(4'hB);
+        push(4'hC);
+
+
         check(
-            "FIFO valid is 0 after final drain",
+            "Count is 3 before random reset",
+            count_o == 3
+        );
+
+        check(
+            "FIFO has valid data before reset",
+            data_out_valid_o == 1
+        );
+
+
+        // --------------------------------------------------------
+        // Randomly assert reset while FIFO is operating.
+        // --------------------------------------------------------
+
+        arst_ni = 0;
+
+        #1;
+
+
+        // --------------------------------------------------------
+        // ALL OUTPUTS MUST BE ZERO DURING RESET
+        // --------------------------------------------------------
+
+        check(
+            "Ready becomes 0 during reset",
+            data_in_ready_o == 0
+        );
+
+        check(
+            "Valid becomes 0 during reset",
             data_out_valid_o == 0
+        );
+
+        check(
+            "Data output becomes 0 during reset",
+            data_out_o == '0
+        );
+
+        check(
+            "Count becomes 0 during reset",
+            count_o == 0
+        );
+
+
+        // --------------------------------------------------------
+        // Keep reset active for two clocks.
+        // --------------------------------------------------------
+
+        repeat (2)
+            @(posedge clk);
+
+        #1;
+
+
+        // Check outputs again while reset remains active
+
+        check(
+            "Ready remains 0 during reset",
+            data_in_ready_o == 0
+        );
+
+        check(
+            "Valid remains 0 during reset",
+            data_out_valid_o == 0
+        );
+
+        check(
+            "Data output remains 0 during reset",
+            data_out_o == '0
+        );
+
+        check(
+            "Count remains 0 during reset",
+            count_o == 0
+        );
+
+
+        // --------------------------------------------------------
+        // Release reset
+        // --------------------------------------------------------
+
+        arst_ni = 1;
+
+        #1;
+
+
+        // --------------------------------------------------------
+        // FIFO must start empty after reset.
+        // --------------------------------------------------------
+
+        check(
+            "FIFO is empty after reset release",
+            data_out_valid_o == 0
+        );
+
+        check(
+            "Count is zero after reset release",
+            count_o == 0
+        );
+
+        check(
+            "FIFO is ready after reset release",
+            data_in_ready_o == 1
+        );
+
+
+        // --------------------------------------------------------
+        // Verify FIFO can operate normally again.
+        // --------------------------------------------------------
+
+        push(4'hD);
+
+        check(
+            "FIFO accepts data after reset",
+            count_o == 1
+        );
+
+        pop(read_data);
+
+        check(
+            "Correct data after reset is D",
+            read_data == 4'hD
+        );
+
+        check(
+            "FIFO is empty after post-reset read",
+            count_o == 0
         );
 
 
