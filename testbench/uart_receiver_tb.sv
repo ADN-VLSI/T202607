@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module uart_receiver_tb;
 
   logic       arst_ni;
