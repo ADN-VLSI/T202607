@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 interface rv_if #(
     parameter int DATA_WIDTH = 8
 )(

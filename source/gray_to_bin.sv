@@ -1,5 +1,3 @@
-`timescale 1ns / 1ps
-
 module gray_to_bin #(
     parameter WIDTH = 8
 ) (

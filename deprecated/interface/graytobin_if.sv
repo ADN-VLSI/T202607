@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 interface gray2bin_if #(
   parameter int WIDTH = 64
 );

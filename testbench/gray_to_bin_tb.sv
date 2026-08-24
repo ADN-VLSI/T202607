@@ -1,5 +1,3 @@
-`timescale 1ns / 1ps
-
 module gray_to_bin_tb;
 
   parameter int WIDTH = 4;
