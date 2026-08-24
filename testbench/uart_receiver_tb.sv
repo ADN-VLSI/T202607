@@ -14,55 +14,55 @@ module uart_receiver_tb;
   uart_receiver #(.OVERSAMPLE(8)) dut (.*);
 
   // --- Task to simulate a UART Transmitter ---
-  task automatic send_uart_byte(
-    input logic [7:0] data,
-    input logic [1:0] num_bits,
-    input logic       parity_en,
-    input logic       parity_type
-  );
-    int bit_clocks = 8; // Matches OVERSAMPLE = 8
-    int total_bits = 5 + num_bits; // e.g., num_bits=3 means 8 data bits
+  task automatic send_uart_byte(input logic [7:0] data, input logic [1:0] num_bits,
+                                input logic parity_en, input logic parity_type);
+    int   bit_clocks = 8;  // Matches OVERSAMPLE = 8
+    int   total_bits = 5 + num_bits;  // e.g., num_bits=3 means 8 data bits
     logic parity_bit;
 
     // Calculate parity over the data bits being sent
-    parity_bit = ^data[total_bits-1:0];
-    if (parity_type == 1) parity_bit = ~parity_bit; // Odd parity
+    parity_bit = parity_type;
+    for (int i = 0; i < total_bits; i++) begin
+      if (i < num_bits) begin
+        parity_bit ^= data[i];
+      end
+    end
 
     // 1. Start bit (Drive line low)
     rx_o = 0;
-    repeat(bit_clocks) @(posedge clk_i);
+    repeat (bit_clocks) @(posedge clk_i);
 
     // 2. Data bits (Send LSB first)
     for (int i = 0; i < total_bits; i++) begin
       rx_o = data[i];
-      repeat(bit_clocks) @(posedge clk_i);
+      repeat (bit_clocks) @(posedge clk_i);
     end
 
     // 3. Parity bit (if enabled)
     if (parity_en) begin
       rx_o = parity_bit;
-      repeat(bit_clocks) @(posedge clk_i);
+      repeat (bit_clocks) @(posedge clk_i);
     end
 
     // 4. Stop bit (Drive line high)
     rx_o = 1;
-    repeat(bit_clocks) @(posedge clk_i);
-    
+    repeat (bit_clocks) @(posedge clk_i);
+
     // Idle space between frames
-    repeat(bit_clocks) @(posedge clk_i);
+    repeat (bit_clocks) @(posedge clk_i);
   endtask
 
   initial begin
     // --- Background Clock Generation ---
     clk_i = 0;
     fork
-      forever #5 clk_i = ~clk_i; // 100MHz clock (10ns period)
+      forever #5 clk_i = ~clk_i;  // 100MHz clock (10ns period)
     join_none
 
     // --- Initialization & Reset ---
     arst_ni       = 0;
-    rx_o          = 1;       // UART idle state is high
-    num_bits_i    = 2'b11;   // 8 data bits
+    rx_o          = 1;  // UART idle state is high
+    num_bits_i    = 2'b11;  // 8 data bits
     parity_en_i   = 0;
     parity_type_i = 0;
 
@@ -75,7 +75,7 @@ module uart_receiver_tb;
     $display("[TEST 1] Sending 8'hA5 (No Parity)...");
     fork
       begin
-        send_uart_byte(8'hA5, 2'b11, 0, 0); // Send Data
+        send_uart_byte(8'hA5, 2'b11, 0, 0);  // Send Data
       end
       begin
         // Monitor for valid data pulse
@@ -85,7 +85,7 @@ module uart_receiver_tb;
       end
     join
 
-    #50; 
+    #50;
 
     // --- TEST 2: 8E1 (8 data bits, Even Parity) ---
     $display("[TEST 2] Sending 8'h3C (Even Parity)...");

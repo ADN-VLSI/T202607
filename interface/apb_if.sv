@@ -38,6 +38,18 @@ interface apb_if #(
       output pready
   );
 
+  modport monitor(
+      input pclk,
+      input presetn,
+      input psel,
+      input penable,
+      input paddr,
+      input pwrite,
+      input pwdata,
+      input prdata,
+      input pready
+  );
+
   bit is_clock_edge_aligned;
 
   always @(posedge pclk) begin
@@ -73,6 +85,15 @@ interface apb_if #(
     do @(posedge pclk); while (~pready);
     rdata = prdata;
     psel <= 1'b0;
+  endtask
+
+  task automatic get_transaction(output logic [ADDR_WIDTH-1:0] addr, output logic write,
+                                 output logic [DATA_WIDTH-1:0] data);
+    do @(posedge pclk); while (!(presetn === '1 && psel === '1 && penable === '0));
+    do @(posedge pclk); while (!(presetn === '1 && psel === '1 && penable === '1 && pready === '1));
+    addr  = paddr;
+    write = pwrite;
+    data  = (write) ? pwdata : prdata;
   endtask
 
   task automatic write(input logic [ADDR_WIDTH-1:0] addr, input logic [DATA_WIDTH-1:0] wdata);
