@@ -8,8 +8,7 @@ LOG_DIR := $(CURDIR)/log
 FILELIST += $(CURDIR)/package/pkg_101.sv
 FILELIST += $(shell find $(CURDIR)/interface -name "*.sv")
 FILELIST += $(shell find $(CURDIR)/source -name "*.sv")
-#FILELIST += $(shell find $(CURDIR)/testbench -name "*.sv")
-FILELIST += $(CURDIR)/testbench/$(TOP).sv
+FILELIST += $(shell find $(CURDIR)/testbench -name "*.sv")
 
 EW_O := | grep -iE "Error:|Warning:" --color=auto || true
 EWHL := | grep -iE "Error:|Warning:|" --color=auto
