@@ -22,14 +22,12 @@ module uart_receiver_tb;
     input logic       parity_en,
     input logic       parity_type
   );
-    int bit_clocks = 8;             // Matches OVERSAMPLE = 8
-    int total_bits = 5 + num_bits;  // e.g., num_bits=3 means 8 data bits
-    logic [7:0] mask;
+    int bit_clocks = 8; // Matches OVERSAMPLE = 8
+    int total_bits = 5 + num_bits; // e.g., num_bits=3 means 8 data bits
     logic parity_bit;
 
-    // Calculate parity using dynamic bitmasking (avoids illegal variable bit-slice)
-    mask = (8'b1 << total_bits) - 1'b1;
-    parity_bit = ^(data & mask);
+    // Calculate parity over the data bits being sent
+    parity_bit = ^data[total_bits-1:0];
     if (parity_type == 1) parity_bit = ~parity_bit; // Odd parity
 
     // 1. Start bit (Drive line low)
