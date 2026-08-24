@@ -15,7 +15,8 @@ module uart_transmitter_tb;
 
   uart_transmitter u_dut (.*);
 
-  task automatic send (input int data, input int num_bits = 3, input bit parity_en = 0, input bit parity_type = 0, input bit extra_stop = 0);
+  task automatic send(input int data, input int num_bits = 3, input bit parity_en = 0,
+                      input bit parity_type = 0, input bit extra_stop = 0);
     data_i        <= data;
     num_bits_i    <= num_bits;
     parity_en_i   <= parity_en;
