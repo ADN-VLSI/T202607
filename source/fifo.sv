@@ -142,9 +142,7 @@ module fifo #(
     // AND
     // ready = 1
 
-    assign write_en =
-        data_in_valid_i &&
-        data_in_ready_o;
+    assign write_en = data_in_valid_i && data_in_ready_o;
 
 
     // ------------------------------------------------------------
@@ -160,9 +158,7 @@ module fifo #(
     //     output the memory location
     //     pointed to by rd_ptr.
 
-    assign data_out_o =
-        arst_ni ?
-        mem[rd_ptr[ADDR_WIDTH-1:0]] :
+    assign data_out_o = arst_ni ? mem[rd_ptr[ADDR_WIDTH-1:0]] :
         '0;
 
 
