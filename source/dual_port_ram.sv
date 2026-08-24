@@ -1,0 +1,46 @@
+module adn_common_dual_port_ram #(
+    parameter int DATA_WIDTH = 32,  // Width of the data bus in bits
+    parameter int ADDR_WIDTH = 8    // Width of the address bus (determines depth)
+) (
+    //Clock/Reset
+    input logic clk_i,  // Write clock
+
+    // Write Port Interface
+    input logic                  wr_en_i,    // Write enable signal
+    input logic [ADDR_WIDTH-1:0] wr_addr_i,  // Write address
+    input logic [DATA_WIDTH-1:0] wr_data_i,  // Data to be written
+
+    // Read Port Interface
+    input  logic [ADDR_WIDTH-1:0] rd_addr_i,  // Read address
+    output logic [DATA_WIDTH-1:0] rd_data_o   // Data read from memory
+);
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // LOCALPARAMS GENERATED
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Calculate total memory depth based on address width
+  localparam int DEPTH = 1 << ADDR_WIDTH;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // SIGNALS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Dual-Port memory matrix array: The physical storage element
+  logic [DATA_WIDTH-1:0] mem_core[DEPTH];
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // SEQUENTIALS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Synchronous Write Channel (wr_clk_i Domain): Handles data storage into the memory array
+  always_ff @(posedge clk_i iff wr_en_i) mem_core[wr_addr_i] <= wr_data_i;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // ASSIGNMENTS
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Asynchronous Read Channel: Instantly reflects changes on rd_addr_i when rd_en_i is high
+  always_comb rd_data_o = mem_core[rd_addr_i];
+
+endmodule
