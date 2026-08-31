@@ -1,0 +1,122 @@
+import uart_regif_pkg::*;
+import mem_if_pkg::*;
+
+module apb_uart_reg_interface (
+    input  logic clk_i,    // SYSTEM CLK
+    input  logic rst_ni,   // SYSTEM RSTn (Active Low)
+
+    // Bus Interface (from APB Bridge mapping to mem_req_t/mem_resp_t)
+    input  mem_req_t  req_i,
+    output mem_resp_t resp_o,
+
+    // Hardware Interface: Configurations & Controls
+    output uart_ctrl_t  ctrl_o,
+    output uart_cfg_t   cfg_o,
+    output uart_intr_t  intr_o,
+
+    // Hardware Interface: Status Input from UART Core/FIFOs
+    input  uart_status_t status_i,
+
+    // CDC TX FIFO Interface
+    output logic [7:0] tx_data_o,
+    output logic       tx_push_o,
+
+    // CDC RX FIFO Interface
+    input  logic [7:0] rx_data_i,
+    output logic       rx_pop_o
+);
+
+    // ---------------------------------------------------------
+    // Internal Registers for RW fields
+    // ---------------------------------------------------------
+    uart_ctrl_t ctrl_q;
+    uart_cfg_t  cfg_q;
+    uart_intr_t intr_q;
+
+    // Assign internal registers to output ports continuously
+    assign ctrl_o = ctrl_q;
+    assign cfg_o  = cfg_q;
+    assign intr_o = intr_q;
+
+    // ---------------------------------------------------------
+    // Combinational Logic for FIFOs
+    // ---------------------------------------------------------
+    // tx_data_o directly takes the lower 8 bits of write data
+    assign tx_data_o = req_i.wdata[7:0];
+    
+    // Push to TX FIFO when writing to ADDR_TXD (0x0C)
+    assign tx_push_o = req_i.valid && req_i.write && (req_i.addr == 8'h0C) && !resp_o.ready;
+    
+    // Pop from RX FIFO when reading from ADDR_RXD (0x10)
+    assign rx_pop_o  = req_i.valid && !req_i.write && (req_i.addr == 8'h10) && !resp_o.ready;
+
+    // ---------------------------------------------------------
+    // Sequential Logic: Register Access & Bus Response
+    // ---------------------------------------------------------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+            ctrl_q       <= CTRL_RST;
+            cfg_q        <= CFG_RST;
+            intr_q       <= INTR_RST;
+            resp_o.ready <= 1'b0;
+            resp_o.error <= 1'b0;
+            resp_o.rdata <= '0;
+        end else begin
+            // 1. Auto-clear flush pulses (write 1 to flush, automatically returns to 0)
+            ctrl_q.rx_flush <= 1'b0;
+            ctrl_q.tx_flush <= 1'b0;
+
+            // 2. Default bus response values per cycle
+            resp_o.ready <= 1'b0;
+            resp_o.error <= 1'b0;
+
+            // 3. Handle Valid Request
+            if (req_i.valid && !resp_o.ready) begin
+                resp_o.ready <= 1'b1; // Acknowledge the request
+
+                if (req_i.write) begin
+                    // ---------------- WRITE OPERATION ----------------
+                    case (req_i.addr)
+                        8'h00: begin // ADDR_CTRL
+                            ctrl_q.rx_en    <= req_i.wdata[1];
+                            ctrl_q.tx_en    <= req_i.wdata[0];
+                            ctrl_q.rx_flush <= req_i.wdata[3]; // Generates a 1-cycle pulse
+                            ctrl_q.tx_flush <= req_i.wdata[2]; // Generates a 1-cycle pulse
+                        end
+                        8'h04: begin // ADDR_CFG
+                            cfg_q.extra_stop  <= req_i.wdata[20];
+                            cfg_q.parity_type <= req_i.wdata[19];
+                            cfg_q.parity_en   <= req_i.wdata[18];
+                            cfg_q.num_bits    <= req_i.wdata[17:16];
+                            cfg_q.baud_div    <= req_i.wdata[15:0];
+                        end
+                        8'h14: begin // ADDR_INTR
+                            intr_q.rx_empty <= req_i.wdata[3];
+                            intr_q.tx_empty <= req_i.wdata[2];
+                            intr_q.rx_full  <= req_i.wdata[1];
+                            intr_q.tx_full  <= req_i.wdata[0];
+                        end
+                        8'h0C: begin // ADDR_TXD
+                            // No register update needed here. 
+                            // Handled combinationally by tx_push_o to send data to CDC TX FIFO.
+                        end
+                        default: resp_o.error <= 1'b1; // Invalid Write Address
+                    endcase
+                end else begin
+                    // ---------------- READ OPERATION ----------------
+                    case (req_i.addr)
+                        8'h00: resp_o.rdata <= {28'd0, ctrl_q.rx_flush, ctrl_q.tx_flush, ctrl_q.rx_en, ctrl_q.tx_en};
+                        8'h04: resp_o.rdata <= {11'd0, cfg_q.extra_stop, cfg_q.parity_type, cfg_q.parity_en, cfg_q.num_bits, cfg_q.baud_div};
+                        8'h08: resp_o.rdata <= {10'd0, status_i.rx_busy, status_i.tx_busy, status_i.rx_fifo_count, status_i.tx_fifo_count};
+                        8'h10: resp_o.rdata <= {24'd0, rx_data_i}; // ADDR_RXD returns CDC RX FIFO data
+                        8'h14: resp_o.rdata <= {28'd0, intr_q.rx_empty, intr_q.tx_empty, intr_q.rx_full, intr_q.tx_full};
+                        default: begin
+                            resp_o.rdata <= '0;
+                            resp_o.error <= 1'b1; // Invalid Read Address
+                        end
+                    endcase
+                end
+            end
+        end
+    end
+endmodule
