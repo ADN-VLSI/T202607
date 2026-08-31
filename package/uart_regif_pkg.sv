@@ -1,12 +1,12 @@
 package uart_regif_pkg;
 
     // ---------------- Register byte-address offsets ----------------
-    localparam int = value; ADDR_CTRL = 8'h00;
-    localparam int = value; ADDR_CFG = 8'h04;
-    localparam int = value; ADDR_STATUS = 8'h08;
-    localparam int = value; ADDR_TXD = 8'h0C;
-    localparam int = value; ADDR_RXD = 8'h10;
-    localparam int = value; ADDR_INTR = 8'h14;
+    localparam int ADDR_CTRL = 8'h00;
+    localparam int ADDR_CFG = 8'h04;
+    localparam int ADDR_STATUS = 8'h08;
+    localparam int ADDR_TXD = 8'h0C;
+    localparam int ADDR_RXD = 8'h10;
+    localparam int ADDR_INTR = 8'h14;
 
     // ---------------- UART_CTRL (0x00) : RW ----------------
     typedef struct packed {
