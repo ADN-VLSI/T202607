@@ -45,7 +45,7 @@ package uart_regif_pkg;
         logic tx_full; // [0]
     } uart_intr_t;
 
-    // ---------------- Reset values ----------------
+ // ---------------- Reset values ----------------
     localparam uart_ctrl_t CTRL_RST = '{
         reserved : '0,
         rx_flush : 1'b0,
