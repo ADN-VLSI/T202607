@@ -1,5 +1,6 @@
 package mem_if_pkg;
-
+    localparam int ADDRWIDTH = 32;
+    localparam int DATAWIDTH = 32;
     typedef struct packed {
         logic [7:0] addr;
         logic [31:0] wdata;
