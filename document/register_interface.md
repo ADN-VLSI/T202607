@@ -39,7 +39,7 @@ The UART_CFG register is used to configure the settings of the UART interface, s
 The UART_STATUS register provides information about the current status of the UART interface, including flags for transmission and reception.
 
 | Bit   | Name          | Reset Value | Description                             |
-| ----- | ------------- | ----------- | --------------------------------------- |
+| ----- | ------------- | ----------- | --------------------------------------- |                                               
 | 9:0   | TX_FIFO_COUNT | 0x0         | Number of bytes in the transmit FIFO    |
 | 19:10 | RX_FIFO_COUNT | 0x0         | Number of bytes in the receive FIFO     |
 | 20    | TX_BUSY       | 0x0         | Transmission busy flag (1:busy, 0:idle) |

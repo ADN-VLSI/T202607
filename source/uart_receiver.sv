@@ -53,11 +53,11 @@ module uart_receiver #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // parity calculation
-  always_comb parity[0] = ^data_o[4:0];
-  always_comb parity[1] = parity[0] ^ data_o[5];
-  always_comb parity[2] = parity[1] ^ data_o[6];
-  always_comb parity[3] = parity[2] ^ data_o[7];
-  always_comb parity_bit = parity_type_i ? ~parity[3] : parity[3];
+  assign parity[0] = ^data_o[4:0];
+  assign parity[1] = parity[0] ^ data_o[5];
+  assign parity[2] = parity[1] ^ data_o[6];
+  assign parity[3] = parity[2] ^ data_o[7];
+  assign parity_bit = parity_type_i ? ~parity[3] : parity[3];
 
   // sample_count
   always_comb begin
@@ -75,7 +75,7 @@ module uart_receiver #(
     endcase
   end
 
-  always_comb sample_now = (sample_count == (OVERSAMPLE / 2));
+  assign sample_now = (sample_count == (OVERSAMPLE / 2));
 
   // state next
   always_comb begin
