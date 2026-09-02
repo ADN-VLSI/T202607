@@ -1,6 +1,6 @@
 module apb_memif #(
     parameter int ADDR_WIDTH = 2,
-    parameter int DATA_WIDTH = 1
+    parameter int DATA_WIDTH = 8
 ) (   
         // --- APB slave port: inputs (from APB master) ---
     input  logic                    arst_n, clk,
@@ -24,6 +24,14 @@ module apb_memif #(
     input  logic [DATA_WIDTH-1:0]   mrdata
 );
 
-    
+    // --- Passthrough ---
+    assign maddr  = paddr;
+    assign mwe    = pwrite;
+    assign mwdata = pwdata;
+    assign mstrb  = pstrb;
+
+    //
+
+
 
 endmodule
