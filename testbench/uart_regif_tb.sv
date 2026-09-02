@@ -1,7 +1,4 @@
 `timescale 1ns/1ps
-`include "uart_regif_pkg.sv"
-`include "mem_if_pkg.sv"
-
 import mem_if_pkg::*;
 import uart_regif_pkg::*;
 

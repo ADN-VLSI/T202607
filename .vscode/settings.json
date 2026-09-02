@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "python",
+    "python.terminal.activateEnvironment": false,
+    "python.useEnvironmentsExtension": false,
+    "python-envs.workspaceSearchPaths": [],
+    "python-envs.globalSearchPaths": []
+}
