@@ -46,6 +46,19 @@ module uart_regif
     logic [DATA_WIDTH-1:0] read_data;
     logic                  addr_invalid;
 
+    // ---------------- Byte-Strobe Mask Helper ----------------
+    function automatic logic [DATA_WIDTH-1:0] apply_wstrb(
+        input logic [DATA_WIDTH-1:0] orig_val,
+        input logic [DATA_WIDTH-1:0] wr_val,
+        input logic [WSTRB_WIDTH-1:0] strb
+    );
+        logic [DATA_WIDTH-1:0] res;
+        for (int i = 0; i < WSTRB_WIDTH; i++) begin
+            res[i*8 +: 8] = strb[i] ? wr_val[i*8 +: 8] : orig_val[i*8 +: 8];
+        end
+        return res;
+    endfunction
+
     always_ff @(posedge clk or negedge arst_n)
     begin
         if(!arst_n)
@@ -56,12 +69,16 @@ module uart_regif
         end
         else
         begin
+            // Flush bits in CTRL register are self-clearing single-cycle pulses
+            ctrl_o.tx_flush <= 1'b0;
+            ctrl_o.rx_flush <= 1'b0;
+
             if(mreq && mwe)
             begin
                 case(maddr)
-                    ADDR_CTRL:  ctrl_o <= uart_ctrl_t'(mwdata);
-                    ADDR_CFG:   cfg_o  <= uart_cfg_t'(mwdata);
-                    ADDR_INTR:  intr_o <= uart_intr_t'(mwdata);
+                    ADDR_CTRL:  ctrl_o <= uart_ctrl_t'(apply_wstrb(32'(ctrl_o), mwdata, mstrb));
+                    ADDR_CFG:   cfg_o  <= uart_cfg_t'(apply_wstrb(32'(cfg_o), mwdata, mstrb));
+                    ADDR_INTR:  intr_o <= uart_intr_t'(apply_wstrb(32'(intr_o), mwdata, mstrb));
                     default:    ;
                 endcase
             end

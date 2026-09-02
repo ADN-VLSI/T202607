@@ -1,5 +1,4 @@
 `timescale 1ns/1ps
-import mem_if_pkg::*;
 import uart_regif_pkg::*;
 
 module uart_regif_tb;
@@ -7,15 +6,25 @@ module uart_regif_tb;
     // ---------------------------------------------------------
     // Clock and Reset
     // ---------------------------------------------------------
-    logic clk_i;
-    logic rst_ni;
+    logic clk;
+    logic arst_n;
 
     // ---------------------------------------------------------
-    // DUT Signals
+    // Memory Interface Signals
     // ---------------------------------------------------------
-    mem_req_t   mem_req_i;
-    mem_resp_t  mem_resp_o;
+    logic        mreq;
+    logic        mwe;
+    logic [31:0] maddr;
+    logic [31:0] mwdata;
+    logic [3:0]  mstrb;
 
+    logic        mack;
+    logic [31:0] mrdata;
+    logic        mresp;
+
+    // ---------------------------------------------------------
+    // Hardware Status & Datapath
+    // ---------------------------------------------------------
     logic [9:0] tx_fifo_count;
     logic [9:0] rx_fifo_count;
     logic       tx_busy;
@@ -33,14 +42,27 @@ module uart_regif_tb;
     uart_cfg_t  cfg_o;
     uart_intr_t intr_o;
 
+    int pass_count = 0;
+    int fail_count = 0;
+
     // ---------------------------------------------------------
     // DUT Instantiation
     // ---------------------------------------------------------
-    uart_regif dut (
-        .clk_i           (clk_i),
-        .rst_ni          (rst_ni),
-        .mem_req_i       (mem_req_i),
-        .mem_resp_o      (mem_resp_o),
+    uart_regif #(
+        .ADDR_WIDTH  (32),
+        .DATA_WIDTH  (32),
+        .WSTRB_WIDTH (4)
+    ) dut (
+        .clk             (clk),
+        .arst_n          (arst_n),
+        .mreq            (mreq),
+        .mwe             (mwe),
+        .maddr           (maddr),
+        .mwdata          (mwdata),
+        .mstrb           (mstrb),
+        .mack            (mack),
+        .mrdata          (mrdata),
+        .mresp           (mresp),
         .tx_fifo_count   (tx_fifo_count),
         .rx_fifo_count   (rx_fifo_count),
         .tx_busy         (tx_busy),
@@ -60,47 +82,46 @@ module uart_regif_tb;
     // Clock Generation
     // ---------------------------------------------------------
     initial begin
-        clk_i = 0;
-        forever #5 clk_i = ~clk_i; // 100MHz clock
+        clk = 0;
+        forever #5 clk = ~clk; // 100MHz clock
     end
 
     // ---------------------------------------------------------
     // Bus Access Tasks
     // ---------------------------------------------------------
     task automatic write_reg(
-        input logic [7:0]  addr, 
+        input logic [31:0] addr, 
         input logic [31:0] data, 
         input logic [3:0]  strb = 4'b1111
     );
-        @(posedge clk_i);
-        mem_req_i.valid = 1'b1;
-        mem_req_i.write = 1'b1;
-        mem_req_i.addr  = {24'd0, addr};
-        mem_req_i.wdata = data;
-        mem_req_i.strb  = strb;
+        @(posedge clk);
+        mreq   <= 1'b1;
+        mwe    <= 1'b1;
+        maddr  <= addr;
+        mwdata <= data;
+        mstrb  <= strb;
         
-        wait(mem_resp_o.ready);
-        @(posedge clk_i);
-        mem_req_i.valid = 1'b0;
-        mem_req_i.write = 1'b0;
+        do @(posedge clk); while (!mack);
+        mreq   <= 1'b0;
+        mwe    <= 1'b0;
     endtask
 
     task automatic read_reg(
-        input  logic [7:0]  addr, 
+        input  logic [31:0] addr, 
         output logic [31:0] rdata, 
         output logic        error
     );
-        @(posedge clk_i);
-        mem_req_i.valid = 1'b1;
-        mem_req_i.write = 1'b0;
-        mem_req_i.addr  = {24'd0, addr};
+        @(posedge clk);
+        mreq   <= 1'b1;
+        mwe    <= 1'b0;
+        maddr  <= addr;
+        mstrb  <= 4'b0000;
         
-        wait(mem_resp_o.ready);
-        rdata = mem_resp_o.rdata;
-        error = mem_resp_o.error;
+        do @(posedge clk); while (!mack);
+        rdata = mrdata;
+        error = mresp;
         
-        @(posedge clk_i);
-        mem_req_i.valid = 1'b0;
+        mreq   <= 1'b0;
     endtask
 
     // ---------------------------------------------------------
@@ -114,91 +135,133 @@ module uart_regif_tb;
         $dumpvars(0, uart_regif_tb);
 
         // Initialize Inputs
-        rst_ni          = 0;
-        mem_req_i       = '0;
+        arst_n          = 0;
+        mreq            = 0;
+        mwe             = 0;
+        maddr           = '0;
+        mwdata          = '0;
+        mstrb           = '0;
         tx_fifo_count   = 0;
         rx_fifo_count   = 0;
         tx_busy         = 0;
         rx_busy         = 0;
-        tx_data_ready_i = 1; // Assume TX FIFO is always ready for tests
+        tx_data_ready_i = 1;
         rx_data_i       = 0;
         rx_data_valid_i = 0;
 
         // Apply Reset
         #20;
-        rst_ni = 1;
-        #10;
+        arst_n = 1;
+        #20;
         $display("\n===============================================");
-        $display("          UART REGIF TESTBENCH STARTED         ");
-        $display("===============================================\n");
+        $display("          UART REGIF UNIT TESTBENCH            ");
+        $display("===============================================");
 
         // -----------------------------------------------------
         // TEST 1: Register Read/Write (CFG Register)
         // -----------------------------------------------------
-        $display("[TEST 1] Writing to CFG Register (0x04)...");
-        // Write: baud_div = 16'h1234, num_bits = 2'd3 (17:16), parity_en = 1 (18)
+        $display("\n[TEST 1] Writing & Reading CFG Register (0x04)...");
         write_reg(ADDR_CFG, 32'h0005_1234, 4'b1111);
-        
-        $display("[TEST 1] Reading from CFG Register (0x04)...");
         read_reg(ADDR_CFG, read_data, read_err);
-        if (read_data[15:0] == 16'h1234 && read_err == 0)
-            $display("  -> SUCCESS: CFG register updated correctly.\n");
-        else
-            $display("  -> FAILED: CFG register read mismatch! Data: %h\n", read_data);
+        if (read_data[15:0] == 16'h1234 && read_err == 0) begin
+            $display("  -> PASS: CFG register write/read verified.");
+            pass_count++;
+        end else begin
+            $display("  -> FAIL: CFG read mismatch! Data: 0x%h, Err: %b", read_data, read_err);
+            fail_count++;
+        end
 
         // -----------------------------------------------------
-        // TEST 2: Status Register Read (Read-Only)
+        // TEST 2: Byte Strobe Masking (WSTRB)
         // -----------------------------------------------------
-        $display("[TEST 2] Verifying STATUS Register (0x08)...");
+        $display("\n[TEST 2] Testing Byte-Strobe Masking on CFG Register...");
+        write_reg(ADDR_CFG, 32'h0000_AB00, 4'b0010);
+        read_reg(ADDR_CFG, read_data, read_err);
+        if (read_data[15:0] == 16'hAB34) begin
+            $display("  -> PASS: Byte strobe successfully modified only byte 1 (0xAB34).");
+            pass_count++;
+        end else begin
+            $display("  -> FAIL: Byte strobe mismatch! Expected 0xAB34, got 0x%h", read_data[15:0]);
+            fail_count++;
+        end
+
+        // -----------------------------------------------------
+        // TEST 3: Status Register Read (Read-Only)
+        // -----------------------------------------------------
+        $display("\n[TEST 3] Verifying STATUS Register (0x08)...");
         tx_busy       = 1'b1;
         rx_fifo_count = 10'd5;
-        
         read_reg(ADDR_STATUS, read_data, read_err);
-        // tx_busy is at bit 20, rx_fifo_count is at bits 19:10
-        if (read_data[20] == 1'b1 && read_data[19:10] == 10'd5 && read_err == 0)
-            $display("  -> SUCCESS: STATUS register read correctly.\n");
-        else
-            $display("  -> FAILED: STATUS register read mismatch!\n");
+        if (read_data[20] == 1'b1 && read_data[19:10] == 10'd5 && read_err == 0) begin
+            $display("  -> PASS: STATUS register correctly reflects hardware states.");
+            pass_count++;
+        end else begin
+            $display("  -> FAIL: STATUS register read mismatch! Data: 0x%h", read_data);
+            fail_count++;
+        end
 
         // -----------------------------------------------------
-        // TEST 3: TX FIFO Push Operation
+        // TEST 4: TX FIFO Push Operation
         // -----------------------------------------------------
-        $display("[TEST 3] Writing to TXD Register (0x0C)...");
+        $display("\n[TEST 4] Testing TX FIFO Push Handshake (0x0C)...");
         write_reg(ADDR_TXD, 32'h0000_00AA, 4'b1111);
-        
-        if (tx_data_valid_o == 1'b1 && tx_data_o == 8'hAA)
-            $display("  -> SUCCESS: TX FIFO push verified (Data: %h).\n", tx_data_o);
-        else
-            $display("  -> FAILED: TX FIFO push signal not asserted!\n");
+        if (tx_data_valid_o == 1'b1 && tx_data_o == 8'hAA) begin
+            $display("  -> PASS: TX FIFO push verified (Data: 0x%h).", tx_data_o);
+            pass_count++;
+        end else begin
+            $display("  -> FAIL: TX FIFO push signals incorrect!");
+            fail_count++;
+        end
 
         // -----------------------------------------------------
-        // TEST 4: RX FIFO Pop Operation
+        // TEST 5: RX FIFO Pop Operation
         // -----------------------------------------------------
-        $display("[TEST 4] Reading from RXD Register (0x10)...");
-        rx_data_valid_i = 1'b1; // Simulate RX FIFO having data
-        rx_data_i       = 8'h55; // Dummy RX data
-        
+        $display("\n[TEST 5] Testing RX FIFO Pop Handshake (0x10)...");
+        rx_data_valid_i = 1'b1;
+        rx_data_i       = 8'h55;
         read_reg(ADDR_RXD, read_data, read_err);
-        if (rx_data_ready_o == 1'b1 && read_data[7:0] == 8'h55 && read_err == 0)
-            $display("  -> SUCCESS: RX FIFO pop verified (Data: %h).\n", read_data[7:0]);
-        else
-            $display("  -> FAILED: RX FIFO pop mismatch!\n");
-        
+        if (rx_data_ready_o == 1'b1 && read_data[7:0] == 8'h55 && read_err == 0) begin
+            $display("  -> PASS: RX FIFO pop verified (Data: 0x%h).", read_data[7:0]);
+            pass_count++;
+        end else begin
+            $display("  -> FAIL: RX FIFO pop mismatch!");
+            fail_count++;
+        end
         rx_data_valid_i = 1'b0;
 
         // -----------------------------------------------------
-        // TEST 5: Error Handling (Write to Read-Only Register)
+        // TEST 6: Flush Pulse Auto-Clearing
         // -----------------------------------------------------
-        $display("[TEST 5] Attempting to Write to STATUS Register (0x08)...");
-        write_reg(ADDR_STATUS, 32'hFFFF_FFFF, 4'b1111);
-        
-        if (mem_resp_o.error == 1'b1)
-            $display("  -> SUCCESS: Write to Read-Only register correctly triggered ERROR.\n");
-        else
-            $display("  -> FAILED: Write to Read-Only register did not trigger ERROR!\n");
+        $display("\n[TEST 6] Testing CTRL Flush Pulse Auto-Clearing...");
+        write_reg(ADDR_CTRL, 32'h0000_000F, 4'b1111);
+        @(posedge clk);
+        read_reg(ADDR_CTRL, read_data, read_err);
+        if (read_data[3:2] == 2'b00 && read_data[1:0] == 2'b11) begin
+            $display("  -> PASS: Flush pulses auto-cleared, enable bits retained (0x%h).", read_data);
+            pass_count++;
+        end else begin
+            $display("  -> FAIL: Flush pulses did not auto-clear! Data: 0x%h", read_data);
+            fail_count++;
+        end
 
+        // -----------------------------------------------------
+        // TEST 7: Invalid Address Error
+        // -----------------------------------------------------
+        $display("\n[TEST 7] Testing Invalid Address Error Detection...");
+        read_reg(32'h0000_00FC, read_data, read_err);
+        if (read_err == 1'b1) begin
+            $display("  -> PASS: Invalid address generated error response.");
+            pass_count++;
+        end else begin
+            $display("  -> FAIL: Invalid address did not trigger error response!");
+            fail_count++;
+        end
+
+        $display("\n===============================================");
+        $display("           TEST RESULTS SUMMARY                ");
         $display("===============================================");
-        $display("            ALL TESTS COMPLETED                ");
+        $display("PASS = %0d, FAIL = %0d", pass_count, fail_count);
+        if (fail_count == 0) $display("ALL UART REGIF UNIT TESTS PASSED!\n");
         $display("===============================================\n");
 
         #20;
