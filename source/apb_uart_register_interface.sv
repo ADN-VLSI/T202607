@@ -42,43 +42,46 @@ module apb_uart_register_interface
     output uart_intr_t intr_o
 );
 
-    // ---------------- Internal flat mem_if signals ----------------
-    logic                   mem_valid;
-    logic                   mem_write;
-    logic [ADDR_WIDTH-1:0]  mem_addr;
-    logic [DATA_WIDTH-1:0]  mem_wdata;
-    logic [WSTRB_WIDTH-1:0] mem_wstrb;
+    // ---------------- Internal memory interface signals (between converter & regif) ----------------
+    logic                   mreq;
+    logic                   mwe;
+    logic [ADDR_WIDTH-1:0]  maddr;
+    logic [DATA_WIDTH-1:0]  mwdata;
+    logic [WSTRB_WIDTH-1:0] mstrb;
 
-    logic                   mem_ready;
-    logic [DATA_WIDTH-1:0]  mem_rdata;
-    logic                   mem_error;
+    logic                   mack;
+    logic [DATA_WIDTH-1:0]  mrdata;
+    logic                   mresp;
 
-    // ---------------- APB -> flat mem_if bridge ----------------
+    // ---------------- APB -> flat memory interface bridge ----------------
     apb_to_mem_converter #(
         .ADDR_WIDTH  (ADDR_WIDTH),
         .DATA_WIDTH  (DATA_WIDTH),
         .WSTRB_WIDTH (WSTRB_WIDTH)
     ) u_apb_to_mem (
-        .psel_i      (psel_i),
-        .penable_i   (penable_i),
-        .pwrite_i    (pwrite_i),
-        .paddr_i     (paddr_i),
-        .pwdata_i    (pwdata_i),
-        .pstrb_i     (pstrb_i),
+        .clk         (clk_i),
+        .arst_n      (rst_ni),
 
-        .pready_o    (pready_o),
-        .prdata_o    (prdata_o),
-        .perror_o    (perror_o),
+        .psel        (psel_i),
+        .penable     (penable_i),
+        .pwrite      (pwrite_i),
+        .paddr       (paddr_i),
+        .pwdata      (pwdata_i),
+        .pstrb       (pstrb_i),
 
-        .mem_valid_o (mem_valid),
-        .mem_write_o (mem_write),
-        .mem_addr_o  (mem_addr),
-        .mem_wdata_o (mem_wdata),
-        .mem_wstrb_o (mem_wstrb),
+        .pready      (pready_o),
+        .prdata      (prdata_o),
+        .pslverr     (perror_o),
 
-        .mem_ready_i (mem_ready),
-        .mem_rdata_i (mem_rdata),
-        .mem_error_i (mem_error)
+        .mreq        (mreq),
+        .mwe         (mwe),
+        .maddr       (maddr),
+        .mwdata      (mwdata),
+        .mstrb       (mstrb),
+
+        .mack        (mack),
+        .mrdata      (mrdata),
+        .mresp       (mresp)
     );
 
     // ---------------- UART register file ----------------
@@ -87,18 +90,18 @@ module apb_uart_register_interface
         .DATA_WIDTH  (DATA_WIDTH),
         .WSTRB_WIDTH (WSTRB_WIDTH)
     ) u_uart_regif (
-        .clk_i           (clk_i),
-        .rst_ni          (rst_ni),
+        .clk             (clk_i),
+        .arst_n          (rst_ni),
 
-        .mem_valid_i     (mem_valid),
-        .mem_write_i     (mem_write),
-        .mem_addr_i      (mem_addr),
-        .mem_wdata_i     (mem_wdata),
-        .mem_wstrb_i     (mem_wstrb),
+        .mreq            (mreq),
+        .mwe             (mwe),
+        .maddr           (maddr),
+        .mwdata          (mwdata),
+        .mstrb           (mstrb),
 
-        .mem_ready_o     (mem_ready),
-        .mem_rdata_o     (mem_rdata),
-        .mem_error_o     (mem_error),
+        .mack            (mack),
+        .mrdata          (mrdata),
+        .mresp           (mresp),
 
         .tx_fifo_count   (tx_fifo_count),
         .rx_fifo_count   (rx_fifo_count),

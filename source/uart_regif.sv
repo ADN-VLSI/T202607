@@ -7,19 +7,20 @@ module uart_regif
     parameter int DATA_WIDTH  = 32,
     parameter int WSTRB_WIDTH = DATA_WIDTH / 8
 )(
-    input  logic clk_i,
-    input  logic rst_ni,
+    // ---------------- Clock & Reset ----------------
+    input  logic                      arst_n,
+    input  logic                      clk,
 
-    // ---------------- Flat memory request/response ----------------
-    input  logic                      mem_valid_i,
-    input  logic                      mem_write_i,
-    input  logic [ADDR_WIDTH-1:0]     mem_addr_i,
-    input  logic [DATA_WIDTH-1:0]     mem_wdata_i,
-    input  logic [WSTRB_WIDTH-1:0]    mem_wstrb_i,
+    // ---------------- Memory interface (from converter) ----------------
+    input  logic                      mreq,
+    input  logic                      mwe,
+    input  logic [ADDR_WIDTH-1:0]     maddr,
+    input  logic [DATA_WIDTH-1:0]     mwdata,
+    input  logic [WSTRB_WIDTH-1:0]    mstrb,
 
-    output logic                      mem_ready_o,
-    output logic [DATA_WIDTH-1:0]     mem_rdata_o,
-    output logic                      mem_error_o,
+    output logic                      mack,
+    output logic [DATA_WIDTH-1:0]     mrdata,
+    output logic                      mresp,
 
     // ---------------- UART datapath / status ----------------
     input  logic [9:0] tx_fifo_count,
@@ -45,9 +46,9 @@ module uart_regif
     logic [DATA_WIDTH-1:0] read_data;
     logic                  addr_invalid;
 
-    always_ff @(posedge clk_i or negedge rst_ni)
+    always_ff @(posedge clk or negedge arst_n)
     begin
-        if(!rst_ni)
+        if(!arst_n)
         begin
             ctrl_o <= CTRL_RST;
             cfg_o  <= CFG_RST;
@@ -55,12 +56,12 @@ module uart_regif
         end
         else
         begin
-            if(mem_valid_i && mem_write_i)
+            if(mreq && mwe)
             begin
-                case(mem_addr_i)
-                    ADDR_CTRL:  ctrl_o <= uart_ctrl_t'(mem_wdata_i);
-                    ADDR_CFG:   cfg_o  <= uart_cfg_t'(mem_wdata_i);
-                    ADDR_INTR:  intr_o <= uart_intr_t'(mem_wdata_i);
+                case(maddr)
+                    ADDR_CTRL:  ctrl_o <= uart_ctrl_t'(mwdata);
+                    ADDR_CFG:   cfg_o  <= uart_cfg_t'(mwdata);
+                    ADDR_INTR:  intr_o <= uart_intr_t'(mwdata);
                     default:    ;
                 endcase
             end
@@ -71,21 +72,21 @@ module uart_regif
     begin
         tx_data_valid_o = 1'b0;
         tx_data_o       = 8'h00;
-        if(mem_valid_i &&
-           mem_write_i &&
-           mem_addr_i == ADDR_TXD)
+        if(mreq &&
+           mwe &&
+           maddr == ADDR_TXD)
         begin
             tx_data_valid_o = 1'b1;
-            tx_data_o       = mem_wdata_i[7:0];
+            tx_data_o       = mwdata[7:0];
         end
     end
 
     always @*
     begin
         rx_data_ready_o = 1'b0;
-        if(mem_valid_i &&
-           !mem_write_i &&
-           mem_addr_i == ADDR_RXD)
+        if(mreq &&
+           !mwe &&
+           maddr == ADDR_RXD)
         begin
             rx_data_ready_o = 1'b1;
         end
@@ -103,7 +104,7 @@ module uart_regif
     always @*
     begin
         read_data = '0;
-        case(mem_addr_i)
+        case(maddr)
             ADDR_CTRL:   read_data = DATA_WIDTH'(ctrl_o);
             ADDR_CFG:    read_data = DATA_WIDTH'(cfg_o);
             ADDR_STATUS: read_data = DATA_WIDTH'(status);
@@ -115,7 +116,7 @@ module uart_regif
 
     always @*
     begin
-        case(mem_addr_i)
+        case(maddr)
             ADDR_CTRL,
             ADDR_CFG,
             ADDR_STATUS,
@@ -128,9 +129,9 @@ module uart_regif
 
     always @*
     begin
-        mem_ready_o = mem_valid_i;
-        mem_rdata_o = read_data;
-        mem_error_o = mem_valid_i && addr_invalid;
+        mack   = mreq;
+        mrdata = read_data;
+        mresp  = mreq && addr_invalid;
     end
 
 endmodule : uart_regif

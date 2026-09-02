@@ -181,14 +181,14 @@ module apb_uart_register_interface_tb;
     begin
         $display("\n[TEST 6] TXD WRITE PATH");
         @(posedge clk);
-        psel    = 1'b1;
-        penable = 1'b0;
-        pwrite  = 1'b1;
-        paddr   = 32'(ADDR_TXD);
-        pwdata  = 32'h000000A5;
-        pstrb   = 4'hF;
+        psel    <= 1'b1;
+        penable <= 1'b0;
+        pwrite  <= 1'b1;
+        paddr   <= 32'(ADDR_TXD);
+        pwdata  <= 32'h000000A5;
+        pstrb   <= 4'hF;
         @(posedge clk);
-        penable = 1'b1;
+        penable <= 1'b1;
         #1;
         if((tx_data == 8'hA5) && tx_valid) begin
             $display("PASS : TX path working"); pass_count++;
@@ -196,8 +196,8 @@ module apb_uart_register_interface_tb;
             $display("FAIL : TX path failed"); fail_count++;
         end
         @(posedge clk);
-        psel    = 1'b0;
-        penable = 1'b0;
+        psel    <= 1'b0;
+        penable <= 1'b0;
     end
     endtask
 
