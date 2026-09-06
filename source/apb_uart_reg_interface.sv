@@ -23,7 +23,7 @@ module apb_uart_reg_interface (
 );
 
     // =========================================================
-    // Internal Registers Declaration
+    // Internal Registers
     // =========================================================
     uart_ctrl_t ctrl_q;
     uart_cfg_t  cfg_q;
@@ -34,7 +34,7 @@ module apb_uart_reg_interface (
     assign intr_o = intr_q;
 
     // =========================================================
-    // BLOCK 1: Combinational Address Decoding & Enables
+    // Combinational Address Decoding & Enables
     // =========================================================
     logic write_en;
     logic read_en;
@@ -50,13 +50,13 @@ module apb_uart_reg_interface (
     assign addr_rxd    = (req_i.addr == 8'h10);
     assign addr_intr   = (req_i.addr == 8'h14);
 
-    // FIFO Control Signals
+    // FIFO Push/Pop Signals (Safely triggered without ready checks)
     assign tx_data_o = req_i.wdata[7:0];
-    assign tx_push_o = write_en && addr_txd && !resp_o.ready;
-    assign rx_pop_o  = read_en  && addr_rxd && !resp_o.ready;
+    assign tx_push_o = write_en && addr_txd;
+    assign rx_pop_o  = read_en  && addr_rxd;
 
     // =========================================================
-    // BLOCK 2: Sequential Logic (Register Updates Only)
+    // Sequential Logic (Register Writes)
     // =========================================================
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
@@ -64,12 +64,10 @@ module apb_uart_reg_interface (
             cfg_q  <= CFG_RST;
             intr_q <= INTR_RST;
         end else begin
-            // Pulse Generation: Auto-clear flush bits every clock cycle
             ctrl_q.rx_flush <= 1'b0;
             ctrl_q.tx_flush <= 1'b0;
 
-            // Update registers only on a valid write request
-            if (write_en && !resp_o.ready) begin
+            if (write_en) begin
                 if (addr_ctrl) begin
                     ctrl_q.tx_en    <= req_i.wdata[0];
                     ctrl_q.rx_en    <= req_i.wdata[1];
@@ -94,10 +92,9 @@ module apb_uart_reg_interface (
     end
 
     // =========================================================
-    // BLOCK 3: Combinational Read Multiplexer & Bus Response
+    // Combinational Read Multiplexer & Bus Response
     // =========================================================
     always_comb begin
-        // 1. Default assignments to prevent inferred latches
         resp_o.ready = 1'b0;
         resp_o.rdata = 32'd0;
         resp_o.error = 1'b0;
@@ -106,16 +103,14 @@ module apb_uart_reg_interface (
             resp_o.ready = 1'b1; // Zero-wait state acknowledgment
 
             if (read_en) begin
-                // Read Operation: Mux data based on address
                 if      (addr_ctrl)   resp_o.rdata = {28'd0, ctrl_q.rx_flush, ctrl_q.tx_flush, ctrl_q.rx_en, ctrl_q.tx_en};
                 else if (addr_cfg)    resp_o.rdata = {11'd0, cfg_q.extra_stop, cfg_q.parity_type, cfg_q.parity_en, cfg_q.num_bits, cfg_q.baud_div};
                 else if (addr_status) resp_o.rdata = {10'd0, status_i.rx_busy, status_i.tx_busy, status_i.rx_fifo_count, status_i.tx_fifo_count};
                 else if (addr_rxd)    resp_o.rdata = {24'd0, rx_data_i};
                 else if (addr_intr)   resp_o.rdata = {28'd0, intr_q.rx_empty, intr_q.tx_empty, intr_q.rx_full, intr_q.tx_full};
-                else                  resp_o.error = 1'b1; // Read from invalid address
+                else                  resp_o.error = 1'b1; 
             end 
             else if (write_en) begin
-                // Write Operation: Check for invalid or read-only addresses
                 if (!addr_ctrl && !addr_cfg && !addr_intr && !addr_txd) begin
                     resp_o.error = 1'b1; 
                 end
