@@ -36,7 +36,7 @@ module clk_div #(
 
   always_comb begin : counter_logic
     div = (div_i == 0) ? 1 : div_i;  // Handle zero division case
-    cnt_next = (cnt == div - 1) ? 0 : cnt + 1;  // Counter logic for division
+    cnt_next = (cnt >= div - 1) ? 0 : cnt + 1;  // Counter logic for division
   end
 
   always_comb begin : equals_0

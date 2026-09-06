@@ -23,7 +23,9 @@ module uart_receiver_tb;
     // Calculate parity over the data bits being sent
     parity_bit = parity_type;
     for (int i = 0; i < total_bits; i++) begin
-      parity_bit ^= data[i];
+      if (i < num_bits) begin
+        parity_bit ^= data[i];
+      end
     end
 
     // 1. Start bit (Drive line low)
@@ -77,7 +79,7 @@ module uart_receiver_tb;
       end
       begin
         // Monitor for valid data pulse
-        wait (data_valid_o);
+        @(posedge clk_i iff data_valid_o);
         if (data_o === 8'hA5) $display(" -> PASS: Received 8'hA5");
         else $display(" -> FAIL: Expected 8'hA5, Got 8'h%h", data_o);
       end
@@ -95,7 +97,7 @@ module uart_receiver_tb;
         send_uart_byte(8'h3C, 2'b11, 1, 0);
       end
       begin
-        wait (data_valid_o);
+        @(posedge clk_i iff data_valid_o);
         if (data_o === 8'h3C) $display(" -> PASS: Received 8'h3C");
         else $display(" -> FAIL: Expected 8'h3C, Got 8'h%h", data_o);
       end
@@ -111,7 +113,7 @@ module uart_receiver_tb;
         send_uart_byte(8'h5A, 2'b11, 1, 1);
       end
       begin
-        wait (data_valid_o);
+        @(posedge clk_i iff data_valid_o);
         if (data_o === 8'h5A) $display(" -> PASS: Received 8'h5A");
         else $display(" -> FAIL: Expected 8'h5A, Got 8'h%h", data_o);
       end
