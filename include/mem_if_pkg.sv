@@ -1,3 +1,6 @@
+`ifndef __GUARD_MEM_IF_PKG_SV__
+`define __GUARD_MEM_IF_PKG_SV__ 0
+
 package mem_if_pkg;
 
 localparam int ADDRWIDTH = 32;
@@ -20,3 +23,5 @@ typedef struct packed
 } mem_resp_t;
 
 endpackage : mem_if_pkg
+
+`endif

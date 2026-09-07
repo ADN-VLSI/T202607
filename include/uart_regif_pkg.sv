@@ -1,3 +1,6 @@
+`ifndef __GUARD_UART_REGIF_PKG_SV__
+`define __GUARD_UART_REGIF_PKG_SV__ 0
+
 package uart_regif_pkg;
 
     // ---------------- Register byte-address offsets ----------------
@@ -72,3 +75,5 @@ package uart_regif_pkg;
     };
 
 endpackage : uart_regif_pkg
+
+`endif
