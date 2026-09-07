@@ -1,4 +1,3 @@
-`timescale 1ns/1ps
 import uart_regif_pkg::*;
 
 module uart_regif_tb;

@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module apb_to_mem_converter #(
     parameter int ADDR_WIDTH  = 32,
     parameter int DATA_WIDTH  = 32,

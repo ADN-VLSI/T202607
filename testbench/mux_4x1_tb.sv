@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module mux_4x1_tb;
 
   localparam int WIDTH = 4;

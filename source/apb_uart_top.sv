@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module apb_uart_top
   import uart_regif_pkg::*;
 #(
