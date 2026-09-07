@@ -376,6 +376,8 @@ module apb_uart_top_tb;
       "single_byte_loopback": begin
         config_seq(115200, 8, 0, 0);
         send_data_seq('h5A);
+        // recv seq
+        // check
       end
 
     endcase
