@@ -1,3 +1,5 @@
+`include "uart_regif_pkg.sv"
+
 module apb_uart_top
   import uart_regif_pkg::*;
 #(
