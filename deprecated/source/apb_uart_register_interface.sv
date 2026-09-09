@@ -18,7 +18,7 @@ module apb_uart_register_interface
 
     output logic                    pready_o,
     output logic [DATA_WIDTH-1:0]   prdata_o,
-    output logic                    perror_o,
+    output logic                    pslverr_o,
 
     // ---------------- UART datapath / status ----------------
     input  logic [9:0] tx_fifo_count,
@@ -69,7 +69,7 @@ module apb_uart_register_interface
 
         .pready      (pready_o),
         .prdata      (prdata_o),
-        .pslverr     (perror_o),
+        .pslverr     (pslverr_o),
 
         .mreq        (mreq),
         .mwe         (mwe),

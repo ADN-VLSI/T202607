@@ -20,7 +20,7 @@ module apb_uart_top
 
     output logic                     pready_o,
     output logic [DATA_WIDTH-1:0]    prdata_o,
-    output logic                     perror_o,
+    output logic                     pslverr_o,
 
     output logic                     tx_o,
     input  logic                     rx_i,
@@ -169,7 +169,7 @@ module apb_uart_top
         .pstrb   (pstrb_i),
         .pready  (pready_o),
         .prdata  (prdata_o),
-        .pslverr (perror_o),
+        .pslverr (pslverr_o),
         .mreq    (mreq),
         .maddr   (maddr),
         .mwe     (mwe),

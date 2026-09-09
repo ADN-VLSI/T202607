@@ -20,7 +20,7 @@ module apb_uart_register_interface_tb;
 
     logic        pready;
     logic [31:0] prdata;
-    logic        perror;
+    logic        pslverr;
 
     logic [9:0] tx_fifo_count;
     logic [9:0] rx_fifo_count;
@@ -56,7 +56,7 @@ module apb_uart_register_interface_tb;
 
         .pready_o        (pready),
         .prdata_o        (prdata),
-        .perror_o        (perror),
+        .pslverr_o        (pslverr),
 
         .tx_fifo_count   (tx_fifo_count),
         .rx_fifo_count   (rx_fifo_count),
@@ -217,7 +217,7 @@ module apb_uart_register_interface_tb;
     begin
         $display("\n[TEST 8] INVALID ADDRESS");
         apb_read(8'h80, rdata);
-        if(perror) begin
+        if(pslverr) begin
             $display("PASS : Invalid address detected"); pass_count++;
         end else begin
             $display("FAIL : Invalid address not detected"); fail_count++;

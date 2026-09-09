@@ -11,7 +11,7 @@
 // 10 | test_repeated_same_byte     | Send same byte several times and receive it several times
 // ==============================================================================================
 
-module apb_uart_top_tb;
+module apb_uart_top_linear_tb;
 
   import uart_regif_pkg::*;
 
@@ -25,7 +25,7 @@ module apb_uart_top_tb;
   logic   [ 3:0] pstrb;
   logic          pready;
   logic   [31:0] prdata;
-  logic          perror;
+  logic          pslverr;
   logic          tx;
   logic          rx;
   logic          intr;
@@ -59,7 +59,7 @@ module apb_uart_top_tb;
       .pstrb_i  (pstrb),
       .pready_o (pready),
       .prdata_o (prdata),
-      .perror_o (perror),
+      .pslverr_o (pslverr),
       .tx_o     (tx),
       .rx_i     (rx),
       .intr_o   (intr)
@@ -396,7 +396,7 @@ module apb_uart_top_tb;
     if (!$value$plusargs("CLI_TEST_REPEATS=%d", test_repeats)) test_repeats = 1;
 
     $dumpfile("sim.vcd");
-    $dumpvars(0, apb_uart_top_tb);
+    $dumpvars(0, apb_uart_top_linear_tb);
 
     $timeformat(-9, 0, "ns");
 
@@ -442,4 +442,4 @@ module apb_uart_top_tb;
     $finish;
   end
 
-endmodule : apb_uart_top_tb
+endmodule : apb_uart_top_linear_tb
