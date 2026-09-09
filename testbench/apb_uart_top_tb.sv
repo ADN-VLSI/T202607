@@ -167,6 +167,14 @@ module apb_uart_top_tb;
     end
   endtask
 
+  `undef TEST_REG_MACRO
+
+  task automatic init_seq ();
+    apb_write(ADDR_CTRL, 32'h0000_000C); // FLUSH
+    apb_write(ADDR_CTRL, 32'h0000_0000); // NOP
+    apb_write(ADDR_CTRL, 32'h0000_0003); // EN TX RX
+  endtask
+
   task automatic config_seq (int baud_rate = 9600, int num_bits = 8, int parity = 0, bit extra_stop = 0);
     logic [31:0] wrdata;
 
@@ -206,25 +214,28 @@ module apb_uart_top_tb;
 
   endtask
 
-  task automatic single_byte_loopback_test;
+  task automatic single_byte_loopback_test (int num_repeats = 1);
     logic [7:0] rx_data;
     logic [7:0] tx_data;
 
-    begin
-      $display("[%0t] TEST 2 : SINGLE BYTE LOOPBACK", $realtime);
-      tx_data = 8'hAB;
-      config_seq(115200, 8, 0, 0);
-      apb_write(ADDR_CTRL, 32'h0000_0003);
+    $display("[%0t] TEST 2 : SINGLE BYTE LOOPBACK", $realtime);
+    config_seq(115200, 8, 0, 0);
+    
+    init_seq();
+    
+    tx_data = $urandom;
+
+    fork
       send_data_seq(tx_data);
       recv_data_seq(rx_data);
+    join
 
-      if (rx_data == tx_data) begin
-        pass_count++;
-        $display("[%0t] PASS : TX = %02h, RX = %02h", $realtime, tx_data, rx_data);
-      end else begin
-        fail_count++;
-        $display("[%0t] FAIL : TX = %02h, RX = %02h", $realtime, tx_data, rx_data);
-      end
+    if (rx_data == tx_data) begin
+      pass_count++;
+      $display("[%0t] PASS : TX = %02h, RX = %02h", $realtime, tx_data, rx_data);
+    end else begin
+      fail_count++;
+      $display("[%0t] FAIL : TX = %02h, RX = %02h", $realtime, tx_data, rx_data);
     end
   endtask
 
@@ -375,13 +386,14 @@ module apb_uart_top_tb;
 
   initial begin
 
-    string test_name;
+    automatic string test_name;
+    automatic int    test_repeats;
 
     pass_count = 0;
     fail_count = 0;
 
-    test_name = "single_byte_loopback";
-
+    if (!$value$plusargs("CLI_TEST_NAME=%s", test_name)) test_name = "reset_test";
+    if (!$value$plusargs("CLI_TEST_REPEATS=%d", test_repeats)) test_repeats = 1;
 
     $dumpfile("sim.vcd");
     $dumpvars(0, apb_uart_top_tb);
@@ -396,11 +408,15 @@ module apb_uart_top_tb;
     case (test_name)
 
       "reset_test": begin
-        reset_test();
+        repeat(test_repeats) reset_test();
       end
 
-      "single_byte_loopback": begin
-        single_byte_loopback_test();
+      "single_byte_loopback_test": begin
+        repeat(test_repeats) single_byte_loopback_test();
+      end
+
+      default: begin
+        $display("ERROR: Unknown test name '%s'", test_name);
       end
 
     endcase
