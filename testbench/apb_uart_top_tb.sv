@@ -172,7 +172,7 @@ module apb_uart_top_tb;
       // read and return rx data
   //endtask
 
-  
+  ////////////////////////
 
 //1. Transmit Data Sequence
 
