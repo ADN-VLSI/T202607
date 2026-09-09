@@ -139,6 +139,9 @@ module apb_uart_top_tb;
     if (rdata == '0) begin                                         \
       fail_count++;                                                \
       $display(`"[%0t] ``__REG__`` REG WRITE FAILED`", $realtime); \
+    end else begin                                                 \
+      pass_count++;                                                \
+      $display(`"[%0t] ``__REG__`` REG WRITE PASSED`", $realtime); \
     end                                                            \
     arst_n <= '0;                                                  \
     repeat (10) @(posedge clk);                                    \
@@ -148,7 +151,10 @@ module apb_uart_top_tb;
     if (rdata != '0) begin                                         \
       fail_count++;                                                \
       $display(`"[%0t] ``__REG__`` REG RESET FAILED`", $realtime); \
-    end                                                            \
+    end else begin                                                 \
+      pass_count++;                                                \
+      $display(`"[%0t] ``__REG__`` REG RESET PASSED`", $realtime); \
+    end
 
 
   task automatic reset_test;
@@ -175,29 +181,49 @@ module apb_uart_top_tb;
     wrdata [20] = extra_stop;
   endtask
 
-  task automatic send_data_seq (input logic [7:0] data);
-      apb_write(ADDR_TXD, {24'h0, data});
-      // wait tx count == 0
+  task automatic send_data_seq(input logic [7:0] data);
+    logic [31:0] status;
+
+    apb_write(ADDR_TXD, {24'h0, data});
+
+    do begin
+      apb_read(ADDR_STATUS, status);
+    end while (status[9:0] != 0);
+
   endtask
 
-  task automatic recv_data_seq (output logic [7:0] data);
-      // wait rx count > 0
-      // read and return rx data
-  endtask
-
-  task automatic test_single_byte_loopback;
+  task automatic recv_data_seq(output logic [7:0] data);
+    logic [31:0] status;
     logic [31:0] rdata;
+
+    do begin
+      apb_read(ADDR_STATUS, status);
+    end while (status[19:10] == 0);
+
+    apb_read(ADDR_RXD, rdata);
+
+    data = rdata[7:0];
+
+  endtask
+
+  task automatic single_byte_loopback_test;
+    logic [7:0] rx_data;
+    logic [7:0] tx_data;
+
     begin
-      $display("TEST 4 : SINGLE BYTE UART LOOPBACK");
-      apb_write(ADDR_TXD, 32'h0000_00A5);
-      repeat (500) @(posedge clk);
-      apb_read(ADDR_RXD, rdata);
-      if (rdata[7:0] == 8'hA5) begin
-        $display("PASS : TX = A5, RX = %02h", rdata[7:0]);
+      $display("[%0t] TEST 2 : SINGLE BYTE LOOPBACK", $realtime);
+      tx_data = 8'hAB;
+      config_seq(115200, 8, 0, 0);
+      apb_write(ADDR_CTRL, 32'h0000_0003);
+      send_data_seq(tx_data);
+      recv_data_seq(rx_data);
+
+      if (rx_data == tx_data) begin
         pass_count++;
+        $display("[%0t] PASS : TX = %02h, RX = %02h", $realtime, tx_data, rx_data);
       end else begin
-        $display("FAIL : TX = A5, RX = %02h", rdata[7:0]);
         fail_count++;
+        $display("[%0t] FAIL : TX = %02h, RX = %02h", $realtime, tx_data, rx_data);
       end
     end
   endtask
@@ -354,7 +380,7 @@ module apb_uart_top_tb;
     pass_count = 0;
     fail_count = 0;
 
-    test_name = "reset_test";
+    test_name = "single_byte_loopback";
 
 
     $dumpfile("sim.vcd");
@@ -374,10 +400,7 @@ module apb_uart_top_tb;
       end
 
       "single_byte_loopback": begin
-        config_seq(115200, 8, 0, 0);
-        send_data_seq('h5A);
-        // recv seq
-        // check
+        single_byte_loopback_test();
       end
 
     endcase
