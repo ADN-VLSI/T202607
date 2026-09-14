@@ -1,5 +1,5 @@
 module uart_regif
-  import uart_regif_pkg::*;
+import uart_regif_pkg::*;
 #(
     parameter int ADDR_WIDTH  = 32,
     parameter int DATA_WIDTH  = 32,
