@@ -1,7 +1,12 @@
 class human;
 
-  protected string name;
-  protected int    age;
+  protected string   name;
+  rand protected int age;
+
+  constraint c_age {
+    age >= 0;
+    age < 120;
+  }
 
   function new(input string name, input int age);
     this.name = name;
@@ -44,7 +49,13 @@ endclass
 class student extends human;
 
   string school;
-  int unsigned roll;
+  rand int unsigned roll;
+
+  constraint c_roll {
+    roll >= 100;
+    roll < 200;
+    (roll % 5) == 0;
+  }
 
   function new(input string name, input int age, input string school, input int unsigned roll);
     super.new(name, age);
@@ -64,7 +75,13 @@ endclass
 class employee extends human;
 
   string company;
-  int unsigned emp_id;
+  rand int unsigned emp_id;
+
+  constraint c_emp_id {
+    emp_id >= 1000;
+    emp_id < 2000;
+    (emp_id % 2) == 1;
+  }
 
   function new(input string name, input int age, input string company, input int unsigned emp_id);
     super.new(name, age);
@@ -98,6 +115,12 @@ module class_test;
 
     h[0] = h1;
     h[1] = h2;
+
+    h[0].display();
+    h[1].display();
+
+    h[0].randomize();
+    h[1].randomize();
 
     h[0].display();
     h[1].display();
