@@ -54,7 +54,7 @@ interface apb_if #(
 
   always @(posedge pclk) begin
     is_clock_edge_aligned <= 1'b1;
-    #1;
+    #1step;
     is_clock_edge_aligned <= 1'b0;
   end
 

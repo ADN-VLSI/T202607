@@ -14,7 +14,7 @@ module apb_to_memif#(
     
     output logic                      PREADY,
     output logic [DATA_WIDTH-1:0]     PRDATA,
-    output logic                      PERROR,
+    output logic                      PSLVERR,
 
     // ----------------------------------------------------
     // Memory Interface (Output to Memory/Slave)
@@ -51,6 +51,6 @@ module apb_to_memif#(
     // ====================================================
     assign PREADY = mready;
     assign PRDATA = mrdata;
-    assign PERROR = merror;
+    assign PSLVERR = merror;
 
 endmodule
