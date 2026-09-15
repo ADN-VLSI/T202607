@@ -1,0 +1,25 @@
+#-----------------------------------------------------------
+# xsim v2026.1 (64-bit)
+# SW Build 6511674 on Tue Jun 16 11:02:23 MDT 2026
+# IP Build 6504888 on Tue Jun 09 09:05:25 MDT 2026
+# SharedData Build 6501428 on Mon Jun 08 17:34:18 MDT 2026
+# Start of session at: Tue Sep 15 19:46:05 2026
+# Process ID         : 15604
+# Current directory  : D:/Git_and_VScode/T202607/build
+# Command line       : xsim.exe -log D:\Git_and_VScode\T202607\log\xsim_pll_random_test.log -mode tcl -source {xsim.dir/snap_pll_random_test/xsim_script.tcl}
+# Log file           : D:/Git_and_VScode/T202607/log/xsim_pll_random_test.log
+# Journal file       : D:/Git_and_VScode/T202607/build\xsim.jou
+# Running On         : DESKTOP-9IUONBC
+# Platform           : Windows 11
+# Operating System   : 26200
+# Processor Detail   : AMD Ryzen 7 7445HS w/ Radeon 740M Graphics     
+# CPU Frequency      : 3194 MHz
+# CPU Physical cores : 6
+# CPU Logical cores  : 12
+# Host memory        : 16357 MB
+# Swap memory        : 3892 MB
+# Total Virtual      : 20249 MB
+# Available Virtual  : 7082 MB
+#-----------------------------------------------------------
+source xsim.dir/snap_pll_random_test/xsim_script.tcl
+run -all

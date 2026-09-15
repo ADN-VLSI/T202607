@@ -1,0 +1,7 @@
+Running: xsim.dir/snap_pll_random_test/xsimk.exe -runall -simmode gui -testplusarg CLI_TEST_NAME=default -testplusarg CLI_TEST_REPEATS=1 -wdb snap_pll_random_test.wdb -simrunnum 0 -socket 55044
+Design successfully loaded
+Design Loading Memory Usage: 17680 KB (Peak: 17680 KB)
+Design Loading CPU Usage: 61 ms
+Simulation completed
+Simulation Memory Usage: 19756 KB (Peak: 19756 KB)
+Simulation CPU Usage: 77 ms

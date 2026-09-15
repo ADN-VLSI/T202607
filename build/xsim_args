@@ -1,0 +1,2 @@
+--testplusarg CLI_TEST_NAME=default 
+--testplusarg CLI_TEST_REPEATS=1 

@@ -1,0 +1,14 @@
+Vivado Simulator v2026.1
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: C:/AMDDesignTools/2026.1/Vivado/bin/unwrapped/win64.o/xelab.exe pll_random_test -s snap_pll_random_test -debug all -log D:\Git_and_VScode\T202607\log\xelab_pll_random_test.log 
+Multi-threading is on. Using 10 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package work.$unit_apb_if_sv_595888297
+Compiling module work.pll_random_test
+Built simulation snapshot snap_pll_random_test

@@ -1,0 +1,20 @@
+0.7
+2020.2
+Jun 16 2026
+11:10:11
+D:/Git_and_VScode/T202607/interface/apb_if.sv,1789397626,systemVerilog,D:/Git_and_VScode/T202607/interface/ctrl_if.sv;D:/Git_and_VScode/T202607/interface/uart_if.sv;D:/Git_and_VScode/T202607/source/apb_mem_converter.sv;D:/Git_and_VScode/T202607/source/apb_uart_top.sv;D:/Git_and_VScode/T202607/source/bin_to_gray.sv;D:/Git_and_VScode/T202607/source/cdc_fifo.sv;D:/Git_and_VScode/T202607/source/clk_div.sv;D:/Git_and_VScode/T202607/source/dual_edge_reg.sv;D:/Git_and_VScode/T202607/source/dual_port_ram.sv;D:/Git_and_VScode/T202607/source/gray_to_bin.sv;D:/Git_and_VScode/T202607/source/uart_receiver.sv;D:/Git_and_VScode/T202607/source/uart_regif.sv;D:/Git_and_VScode/T202607/source/uart_transmitter.sv;D:/Git_and_VScode/T202607/testbench/pll_random_test.sv,D:/Git_and_VScode/T202607/interface/ctrl_if.sv,,$unit_apb_if_sv_595888297;apb_if,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/interface/ctrl_if.sv,1789397626,systemVerilog,,D:/Git_and_VScode/T202607/interface/uart_if.sv,,ctrl_if,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/interface/uart_if.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/source/apb_mem_converter.sv,,uart_if,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/package/uart_regif_pkg.sv,1789139003,verilog,D:/Git_and_VScode/T202607/source/apb_uart_top.sv;D:/Git_and_VScode/T202607/source/uart_regif.sv,,,uart_regif_pkg,,,,,,,,
+D:/Git_and_VScode/T202607/source/apb_mem_converter.sv,1789397626,systemVerilog,,D:/Git_and_VScode/T202607/source/apb_uart_top.sv,,apb_to_mem_converter,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/apb_uart_top.sv,1789397626,systemVerilog,,D:/Git_and_VScode/T202607/source/bin_to_gray.sv,D:/Git_and_VScode/T202607/package/uart_regif_pkg.sv,apb_uart_top,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/bin_to_gray.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/source/cdc_fifo.sv,,bin_to_gray,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/cdc_fifo.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/source/clk_div.sv,,cdc_fifo,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/clk_div.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/source/dual_edge_reg.sv,,clk_div,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/dual_edge_reg.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/source/dual_port_ram.sv,,dual_edge_reg,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/dual_port_ram.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/source/gray_to_bin.sv,,adn_common_dual_port_ram,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/gray_to_bin.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/source/uart_receiver.sv,,gray_to_bin,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/uart_receiver.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/source/uart_regif.sv,,uart_receiver,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/uart_regif.sv,1789397626,systemVerilog,,D:/Git_and_VScode/T202607/source/uart_transmitter.sv,,uart_regif,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/source/uart_transmitter.sv,1789139003,systemVerilog,,D:/Git_and_VScode/T202607/testbench/pll_random_test.sv,,uart_transmitter,,,D:\Git_and_VScode\T202607\package,,,,,
+D:/Git_and_VScode/T202607/testbench/pll_random_test.sv,1789479779,systemVerilog,,,,pll_random_test,,,D:\Git_and_VScode\T202607\package,,,,,

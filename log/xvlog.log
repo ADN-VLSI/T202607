@@ -1,0 +1,27 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/interface/apb_if.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/interface/ctrl_if.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/interface/uart_if.sv" into library work
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/apb_mem_converter.sv" into library work
+INFO: [VRFC 10-311] analyzing module apb_to_mem_converter
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/apb_uart_top.sv" into library work
+INFO: [VRFC 10-311] analyzing module apb_uart_top
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/bin_to_gray.sv" into library work
+INFO: [VRFC 10-311] analyzing module bin_to_gray
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/cdc_fifo.sv" into library work
+INFO: [VRFC 10-311] analyzing module cdc_fifo
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/clk_div.sv" into library work
+INFO: [VRFC 10-311] analyzing module clk_div
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/dual_edge_reg.sv" into library work
+INFO: [VRFC 10-311] analyzing module dual_edge_reg
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/dual_port_ram.sv" into library work
+INFO: [VRFC 10-311] analyzing module adn_common_dual_port_ram
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/gray_to_bin.sv" into library work
+INFO: [VRFC 10-311] analyzing module gray_to_bin
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/uart_receiver.sv" into library work
+INFO: [VRFC 10-311] analyzing module uart_receiver
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/uart_regif.sv" into library work
+INFO: [VRFC 10-311] analyzing module uart_regif
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/source/uart_transmitter.sv" into library work
+INFO: [VRFC 10-311] analyzing module uart_transmitter
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/Git_and_VScode/T202607/testbench/pll_random_test.sv" into library work
+INFO: [VRFC 10-311] analyzing module pll_random_test
