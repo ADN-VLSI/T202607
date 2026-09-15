@@ -1,25 +1,6 @@
-ifeq ($(OS),Windows_NT)
-  XVLOG ?= xvlog.bat
-  XELAB ?= xelab.bat
-  XSIM  ?= xsim.bat
-else
-  export SHELL=/bin/bash
-  XVLOG ?= xvlog
-  XELAB ?= xelab
-  XSIM  ?= xsim
-endif
+export SHELL=/bin/bash
 
 TOP := test
-
-# If user provided TOP matching a file in testbench/ (e.g., pll_config or apb_uart_top_linear)
-ifneq ($(wildcard $(CURDIR)/testbench/$(TOP).sv),)
-  MOD_IN_FILE := $(shell sed -n 's/^[[:space:]]*module[[:space:]]\+\([a-zA-Z0-9_]\+\).*/\1/p' $(CURDIR)/testbench/$(TOP).sv | head -n 1)
-  ifneq ($(MOD_IN_FILE),)
-    override TOP := $(MOD_IN_FILE)
-  endif
-else ifneq ($(wildcard $(CURDIR)/testbench/$(TOP)_tb.sv),)
-  override TOP := $(TOP)_tb
-endif
 
 BUILD_DIR := $(CURDIR)/build
 LOG_DIR := $(CURDIR)/log
@@ -37,8 +18,12 @@ $(BUILD_DIR) $(LOG_DIR):
 	@mkdir -p $@
 	@echo "*" > $@/.gitignore
 
-TN ?= reset_test
-TR ?= 1
+XVLOG ?= xvlog
+XELAB ?= xelab
+XSIM  ?= xsim
+
+TN := default
+TR := 1
 
 $(BUILD_DIR)/snap_$(TOP):
 	@make -s $(BUILD_DIR)
@@ -46,10 +31,6 @@ $(BUILD_DIR)/snap_$(TOP):
 	@echo -e "\033[1;33m>\033[0m Compiling $(TOP)..."
 	@cd $(BUILD_DIR) && $(XVLOG) -sv $(FILELIST) -log $(LOG_DIR)/xvlog_$(shell date +%Y%m%d_%H%M%S).log $(EW_O)
 	@cd $(BUILD_DIR) && $(XELAB) $(TOP) -s snap_$(TOP) -debug all -log $(LOG_DIR)/xelab_$(TOP)_$(shell date +%Y%m%d_%H%M%S).log $(EW_O)
-	@if [ ! -d $(BUILD_DIR)/xsim.dir/snap_$(TOP) ]; then \
-		echo -e "\033[1;31m>\033[0m Elaboration failed! Check logs in $(LOG_DIR)"; \
-		exit 1; \
-	fi
 	@echo "" > $(BUILD_DIR)/snap_$(TOP)
 
 .PHONY: run
@@ -63,10 +44,9 @@ run:
 .PHONY: all
 all:
 	@make -s clean
-	@make -s run TOP=$(TOP) TN=$(TN) TR=$(TR)
+	@make -s run TN=$(TN) TR=$(TR)
 
 .PHONY: clean
 clean:
 	@echo -e "\033[1;33m>\033[0m Cleaning $(BUILD_DIR) and $(LOG_DIR) directories."
 	@rm -rf $(BUILD_DIR) $(LOG_DIR)
-
