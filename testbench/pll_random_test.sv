@@ -57,7 +57,7 @@ module pll_random_test;
     // Create the array of 2 base class handles
     automatic ClockConfig cfg_handles[2];
     
-    // Allocate the objects directly into the array slots
+    // Allocate the objects directly into the array slots.
     cfg_handles[0] = new();              
     cfg_handles[1] = ClockDisplay::new(); 
     
