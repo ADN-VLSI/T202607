@@ -13,22 +13,15 @@ class pll_config;
 
   // ref_div = 1 to 15
   constraint c_ref_div {
-    ref_div >= 1;
-    ref_div <= 15;
+    ref_div inside {[1:15]};
   }
 
 
   // fb_div = 16 to 511
+  // Guarantees out_freq <= 5000 MHz naturally: (100 * fb_div) / ref_div <= 5000 => fb_div <= 50 * ref_div
   constraint c_fb_div {
-    fb_div >= 16;
-    fb_div <= 511;
-  }
-
-
-  // Output frequency constraint: 16 MHz <= out_freq <= 5000 MHz
-  constraint c_out_freq {
-    (100 * fb_div) >= (16   * ref_div);
-    (100 * fb_div) <= (5000 * ref_div);
+    fb_div inside {[16:511]};
+    fb_div <= 50 * ref_div;
   }
 
 
