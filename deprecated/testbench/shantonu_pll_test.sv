@@ -12,16 +12,16 @@ class pll_config;
 
 
   // ref_div = 1 to 15
-  constraint c_ref_div {
-    ref_div inside {[1:15]};
-  }
+  constraint c_ref_div {ref_div inside {[1 : 15]};}
 
 
   // fb_div = 16 to 511
+  constraint c_fb_div {fb_div inside {[16 : 511]};}
+
   // Guarantees out_freq <= 5000 MHz naturally: (100 * fb_div) / ref_div <= 5000 => fb_div <= 50 * ref_div
-  constraint c_fb_div {
-    fb_div inside {[16:511]};
-    fb_div <= 50 * ref_div;
+  constraint c_out_freq {
+    ref_div * 5000 >= in_freq * fb_div;
+    ref_div * 16 <= in_freq * fb_div;
   }
 
 
@@ -30,23 +30,23 @@ class pll_config;
     this.in_freq = 100;
   endfunction
 
+  // Calculate output frequency
+  function automatic void post_randomize();
+    void'(calculate_out_freq());
+  endfunction
+
 
   // Calculate output frequency
-  virtual function automatic void calculate_out_freq();
-
+  virtual function automatic int calculate_out_freq();
     out_freq = (in_freq * fb_div) / ref_div;
-
+    return out_freq;
   endfunction
 
 
   // Check output frequency limit
   virtual function automatic bit valid_out_freq();
-
-    if ((out_freq >= 16) && (out_freq <= 5000))
-      return 1;
-    else
-      return 0;
-
+    if ((out_freq >= 16) && (out_freq <= 5000)) return 1;
+    else return 0;
   endfunction
 
 
@@ -64,24 +64,21 @@ class pll_config;
     return this.fb_div;
   endfunction
 
-
   virtual function automatic int get_out_freq();
     return this.out_freq;
   endfunction
 
-
   virtual function automatic string to_string();
 
     return $sformatf(
-      "IN_FREQ: %0d MHz   REF_DIV: %0d   FB_DIV: %0d   OUT_FREQ: %0d MHz",
-      get_in_freq(),
-      get_ref_div(),
-      get_fb_div(),
-      get_out_freq()
+        "IN_FREQ: %0d MHz   REF_DIV: %0d   FB_DIV: %0d   OUT_FREQ: %0d MHz",
+        get_in_freq(),
+        get_ref_div(),
+        get_fb_div(),
+        get_out_freq()
     );
 
   endfunction
-
 
   virtual function automatic void display();
     $display(to_string());
@@ -107,18 +104,12 @@ module pll_test;
 
         if (pll.valid_out_freq()) begin
           pll.display();
-        end
-        else begin
-          $display(
-            "INVALID CONFIG -> REF_DIV=%0d FB_DIV=%0d OUT_FREQ=%0d MHz",
-            pll.get_ref_div(),
-            pll.get_fb_div(),
-            pll.get_out_freq()
-          );
+        end else begin
+          $display("INVALID CONFIG -> REF_DIV=%0d FB_DIV=%0d OUT_FREQ=%0d MHz", pll.get_ref_div(),
+                   pll.get_fb_div(), pll.get_out_freq());
         end
 
-      end
-      else begin
+      end else begin
         $display("Randomization Failed");
       end
 
