@@ -9,12 +9,12 @@ class apb_monitor;
   mailbox #(apb_rsp_item) mbx;
 
 
-  virtual function set_interface(virtual apb_if intf);
+  virtual function automatic void set_interface(virtual apb_if intf);
     this.intf = intf;
   endfunction
 
 
-  virtual function set_mailbox(mailbox #(apb_rsp_item) mbx);
+  virtual function automatic void set_mailbox(mailbox #(apb_rsp_item) mbx);
     this.mbx = mbx;
   endfunction
 
@@ -25,22 +25,11 @@ class apb_monitor;
 
         apb_rsp_item item;
 
-        logic [31:0] addr;
-        logic        write;
-        logic [31:0] data;
-        logic        slverr;
-
-        // Monitor one completed APB transaction
-        intf.get_transaction(addr, write, data, slverr);
-
         // Create APB response item
         item = new();
 
-        // Put monitored values into response item
-        item.addr   = addr[4:0];
-        item.we     = write;
-        item.data   = data;
-        item.slverr = slverr;
+        // Monitor one completed APB transaction
+        intf.get_transaction(item.addr, item.we, item.data, item.slverr);
 
         // Send response item to monitor output mailbox
         mbx.put(item);

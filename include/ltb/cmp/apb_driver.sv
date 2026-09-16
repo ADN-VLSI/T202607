@@ -8,11 +8,11 @@ class apb_driver;
   virtual apb_if intf;
   mailbox #(apb_seq_item) mbx;
 
-  virtual function set_interface(virtual apb_if intf);
+  virtual function automatic void set_interface(virtual apb_if intf);
     this.intf = intf;
   endfunction
 
-  virtual function set_mailbox(mailbox#(apb_seq_item) mbx);
+  virtual function automatic void set_mailbox(mailbox#(apb_seq_item) mbx);
     this.mbx = mbx;
   endfunction
 

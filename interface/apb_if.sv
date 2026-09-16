@@ -113,5 +113,14 @@ interface apb_if #(
     do_transaction(addr, '0, '0, rdata, dummy_2);
   endtask
 
+  task automatic wait_till_idle(int x = 10);
+    int i;
+    while (i < x) begin
+      @(posedge pclk);
+      i++;
+      if (psel == 1) i = 0;
+    end
+  endtask
+
 endinterface
 
