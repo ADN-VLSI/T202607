@@ -1,3 +1,6 @@
+`ifndef __GUARD_APB_DRIVER_SV__
+`define __GUARD_APB_DRIVER_SV__ 0
+
 `include "ltb/obj/apb_seq_item.sv"
 
 class apb_driver;
@@ -27,3 +30,5 @@ class apb_driver;
   endtask
 
 endclass
+
+`endif
