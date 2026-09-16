@@ -1,0 +1,7 @@
+0.7
+2020.2
+Jun 16 2026
+11:10:11
+E:/Shantanu_NEW/T202607/package/uart_regif_pkg.sv,1788761553,systemVerilog,E:/Shantanu_NEW/T202607/source/uart_regif.sv,E:/Shantanu_NEW/T202607/source/uart_regif.sv,,uart_regif_pkg,,,,,,,,
+E:/Shantanu_NEW/T202607/source/apb_uart_top.sv,1788961918,systemVerilog,,,E:/Shantanu_NEW/T202607/package/uart_regif_pkg.sv,apb_uart_top,,,package,,,,,
+E:/Shantanu_NEW/T202607/source/uart_regif.sv,1789467952,systemVerilog,,,,uart_regif,,,,,,,,
