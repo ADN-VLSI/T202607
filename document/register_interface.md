@@ -68,9 +68,10 @@ The UART_RXD register is used to read data received over the UART interface. Rea
 
 The UART_INTR register is used to configure and monitor interrupts for the UART interface. It allows enabling or disabling specific interrupt sources.
 
-| Bit | Name     | Reset Value | Description                                                  |
-| --- | -------- | ----------- | ------------------------------------------------------------ |
-| 0   | TX_FULL  | 0x0         | Transmit FIFO full interrupt enable (1:enabled, 0:disabled)  |
-| 1   | RX_FULL  | 0x0         | Receive FIFO full interrupt enable (1:enabled, 0:disabled)   |
-| 2   | TX_EMPTY | 0x0         | Transmit FIFO empty interrupt enable (1:enabled, 0:disabled) |
-| 3   | RX_EMPTY | 0x0         | Receive FIFO empty interrupt enable (1:enabled, 0:disabled)  |
+| Bit  | Name     | Reset Value | Description                                                  |
+| ---- | -------- | ----------- | ------------------------------------------------------------ |
+| 0    | TX_FULL  | 0x0         | Transmit FIFO full interrupt enable (1:enabled, 0:disabled)  |
+| 1    | RX_FULL  | 0x0         | Receive FIFO full interrupt enable (1:enabled, 0:disabled)   |
+| 2    | TX_EMPTY | 0x0         | Transmit FIFO empty interrupt enable (1:enabled, 0:disabled) |
+| 3    | RX_EMPTY | 0x0         | Receive FIFO empty interrupt enable (1:enabled, 0:disabled)  |
+| 31:4 | Reserved | 0x0         | Reserved for future use                                      |

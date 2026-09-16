@@ -6,48 +6,50 @@ interface apb_if #(
     input logic presetn
 );
 
-  logic                  psel;
-  logic                  penable;
-  logic [ADDR_WIDTH-1:0] paddr;
-  logic                  pwrite;
-  logic [DATA_WIDTH-1:0] pwdata;
-  logic [DATA_WIDTH-1:0] prdata;
-  logic                  pready;
+  logic                    psel;
+  logic                    penable;
+  logic [  ADDR_WIDTH-1:0] paddr;
+  logic                    pwrite;
+  logic [  DATA_WIDTH-1:0] pwdata;
+  logic [DATA_WIDTH/8-1:0] pstrb;
+  logic                    pready;
+  logic [  DATA_WIDTH-1:0] prdata;
+  logic                    pslverr;
 
   modport master(
-      input pclk,
-      input presetn,
       output psel,
       output penable,
       output paddr,
       output pwrite,
       output pwdata,
+      output pstrb,
+      input pready,
       input prdata,
-      input pready
+      input pslverr
   );
 
   modport slave(
-      input pclk,
-      input presetn,
       input psel,
       input penable,
       input paddr,
       input pwrite,
       input pwdata,
+      input pstrb,
+      output pready,
       output prdata,
-      output pready
+      output pslverr
   );
 
   modport monitor(
-      input pclk,
-      input presetn,
       input psel,
       input penable,
       input paddr,
       input pwrite,
       input pwdata,
+      input pstrb,
+      input pready,
       input prdata,
-      input pready
+      input pslverr
   );
 
   bit is_clock_edge_aligned;
@@ -65,30 +67,34 @@ interface apb_if #(
       paddr   <= '0;
       pwrite  <= '0;
       pwdata  <= '0;
+      pstrb   <= '0;
     end else begin
-      prdata <= '0;
-      pready <= '0;
+      pready  <= '0;
+      prdata  <= '0;
+      pslverr <= '0;
     end
   endtask
 
   task automatic do_transaction(input logic [ADDR_WIDTH-1:0] addr, input logic write,
                                 input logic [DATA_WIDTH-1:0] wdata,
-                                output logic [DATA_WIDTH-1:0] rdata);
+                                output logic [DATA_WIDTH-1:0] rdata, output logic slverr);
     wait (is_clock_edge_aligned);
     psel    <= 1'b1;
     penable <= 1'b0;
     paddr   <= addr;
     pwrite  <= write;
     pwdata  <= wdata;
+    pstrb   <= '1;
     @(posedge pclk);
     penable <= 1'b1;
     do @(posedge pclk); while (~pready);
-    rdata = prdata;
+    rdata  = prdata;
+    slverr = pslverr;
     psel <= 1'b0;
   endtask
 
   task automatic get_transaction(output logic [ADDR_WIDTH-1:0] addr, output logic write,
-                                 output logic [DATA_WIDTH-1:0] data);
+                                 output logic [DATA_WIDTH-1:0] data, output logic slverr);
     do @(posedge pclk); while (!(presetn === '1 && psel === '1 && penable === '0));
     do @(posedge pclk); while (!(presetn === '1 && psel === '1 && penable === '1 && pready === '1));
     addr  = paddr;
@@ -98,11 +104,13 @@ interface apb_if #(
 
   task automatic write(input logic [ADDR_WIDTH-1:0] addr, input logic [DATA_WIDTH-1:0] wdata);
     bit dummy_1;
-    do_transaction(addr, '1, wdata, dummy_1);
+    bit dummy_2;
+    do_transaction(addr, '1, wdata, dummy_1, dummy_2);
   endtask
 
   task automatic read(input logic [ADDR_WIDTH-1:0] addr, output logic [DATA_WIDTH-1:0] rdata);
-    do_transaction(addr, '0, '0, rdata);
+    bit dummy_2;
+    do_transaction(addr, '0, '0, rdata, dummy_2);
   endtask
 
 endinterface
