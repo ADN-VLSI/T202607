@@ -1,8 +1,16 @@
 `include "ltb/obj/apb_seq_item.sv"
 `include "ltb/obj/apb_rsp_item.sv"
+`include "ltb/obj/uart_seq_item.sv"
+`include "ltb/obj/uart_rsp_item.sv"
 
 `include "ltb/cmp/apb_driver.sv"
 `include "ltb/cmp/apb_monitor.sv"
+`include "ltb/cmp/uart_driver.sv"
+`include "ltb/cmp/uart_monitor.sv"
+
+`include "ltb/cmp/generator.sv"
+`include "ltb/cmp/scoreboard.sv"
+
 
 module apb_uart_top_layered_tb;
 
@@ -46,11 +54,21 @@ module apb_uart_top_layered_tb;
   // CLASSES
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  mailbox #(apb_seq_item) apb_dvr_mbx;
-  mailbox #(apb_rsp_item) apb_mon_mbx;
+  mailbox #(apb_seq_item)  apb_dvr_mbx;
+  mailbox #(apb_rsp_item)  apb_mon_mbx;
+
+  mailbox #(uart_seq_item) uart_dvr_mbx;
+  mailbox #(uart_rsp_item) uart_mon_mbx;
+
+  generator gen;
 
   apb_driver apb_dvr;
   apb_monitor apb_mon;
+
+  uart_driver uart_dvr;
+  uart_monitor uart_mon;
+
+  scoreboard scbd;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // RTL
@@ -92,8 +110,10 @@ module apb_uart_top_layered_tb;
     // DECLARATIONS
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    automatic string test_name;
-    automatic int    test_repeats;
+    automatic string       test_name;
+    automatic int          test_repeats;
+    automatic int          baud_div;
+    automatic logic [31:0] cfg_data;
 
     pass_count = 0;
     fail_count = 0;
@@ -109,19 +129,42 @@ module apb_uart_top_layered_tb;
     // BUILD PHASE
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    apb_dvr_mbx = new(1);
-    apb_mon_mbx = new();
+    apb_dvr_mbx  = new(1);
+    apb_mon_mbx  = new();
+
+    uart_dvr_mbx = new(1);
+    uart_mon_mbx = new();
+
+    gen = new();
+
     apb_dvr = new();
     apb_mon = new();
+
+    uart_dvr = new();
+    uart_mon = new();
+
+    scbd = new();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // CONNECT PHASE
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    gen.set_apb_mailbox(apb_dvr_mbx);
+    gen.set_uart_mailbox(uart_dvr_mbx);
+
     apb_dvr.set_interface(apb_intf);
     apb_mon.set_interface(apb_intf);
     apb_dvr.set_mailbox(apb_dvr_mbx);
     apb_mon.set_mailbox(apb_mon_mbx);
+
+    uart_dvr.set_interface(rx_intf);
+    uart_mon.set_interface(tx_intf);
+    uart_dvr.set_mailbox(uart_dvr_mbx);
+    uart_mon.set_mailbox(uart_mon_mbx);
+
+    scbd.set_apb_mailbox(apb_mon_mbx);
+    scbd.set_uart_mailbox(uart_mon_mbx);
+    scbd.set_interface(tx_intf);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // RESET PHASE
@@ -138,14 +181,38 @@ module apb_uart_top_layered_tb;
     apb_dvr.run();
     apb_mon.run();
 
-    repeat (3) begin
-      automatic apb_seq_item seq_item = new();
-      seq_item.randomize() with {
-        // seq_item.addr == ADDR_CTRL;
-        seq_item.we == 1;
-      };
-      $display("apb_dvr sending: %s", seq_item.to_string());
-      apb_dvr_mbx.put(seq_item);
+    tx_intf.baud_rate = 115200;
+
+    uart_dvr.run();
+    uart_mon.run();
+
+    scbd.run();
+
+    $display("\nAPB UART LAYERED TESTBENCH\n");
+
+    baud_div = 100_000_000 / 115200;
+
+    cfg_data = '0;
+    cfg_data[15:0]  = baud_div;
+    cfg_data[17:16] = 2'd3;
+    cfg_data[18]    = 1'b0;
+    cfg_data[19]    = 1'b0;
+    cfg_data[20]    = 1'b0;
+
+    gen.apb_write(
+        ADDR_CFG,
+        cfg_data
+    );
+
+    gen.apb_write(
+        ADDR_CTRL,
+        32'h0000_0003
+    );
+
+    apb_intf.wait_till_idle();
+
+    repeat (10) begin
+      gen.random_uart_tx();
     end
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -154,19 +221,18 @@ module apb_uart_top_layered_tb;
 
     apb_intf.wait_till_idle();
 
+    #5ms;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // REPORT PHASE
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    while (apb_mon_mbx.num()) begin
-      apb_rsp_item item;
-      apb_mon_mbx.get(item);
-      $display("apb_mon received: %s", item.to_string());
-    end
+    scbd.report();
 
     #100ns;
 
     $finish;
+
   end
 
 endmodule
