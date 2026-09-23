@@ -9,7 +9,9 @@ import uart_regif_pkg::ADDR_RXD;
 
 class scoreboard;
 
-    //////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    //MAILBOX  CONNECTIONS
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     mailbox #(apb_rsp_item) apb_mbx; //apb_monitor to scoreboard
     mailbox #(uart_rsp_item) uart_tx_mbx; //uart_tx monitor to scoreboard
@@ -21,7 +23,9 @@ class scoreboard;
     int pass = 0;
     int fail = 0;
 
-    ///////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //SETTING MAILBOXES
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     virtual function automatic void set_apb_mailbox(mailbox #(apb_rsp_item) mbx);
         this.apb_mbx = mbx;
@@ -35,9 +39,9 @@ class scoreboard;
         this.uart_rx_mbx = mbx;
     endfunction
 
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
     //APB Process
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     virtual task automatic apb_process();
         forever begin
@@ -46,22 +50,38 @@ class scoreboard;
 
             apb_mbx.get(item);
 
-            if (item.slverr == 1`b1) continue;
+            if (item.slverr == 1'b1) continue;
             
             //---TX PATH---
-            if ((item.we == 1`b1) && (item.addr == ADDR_TXD)) begin
-                t_expected_q.push_back(item.data[7:0]);
+            if ((item.we == 1'b1) && (item.addr == ADDR_TXD)) begin
+                tx_expected_q.push_back(item.data[7:0]);
                 $display("[%0t] SCB: Expecting 0x%02h on tx line", $time, item.data[7:0]);
             end
 
             //---RX PATH---
+            else if ((item.we ===1'b0) && (item.addr == ADDR_RXD)) begin
+                if (rx_expected_q.size() == 0) begin
+                    fail++;
+                    $display("[%0t] FAIL: Nothing found on tx line", $time);
+                    continue;
+                end
 
+                expected = rx_expected_q.pop_front();
+
+                if (item.data[7:0] == expected) begin
+                    pass++;
+                    $display("[%0t] PASS: RXD: 0x%02h", $time, item.data[7:0]);
+                end else begin
+                    fail++;
+                    $display("[%0t] FAIL: rx line expected 0x%02h but got 0x%02h", $time, expected, item.data[7:0]);
+                end
+            end
         end
     endtask
 
-    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
     //UART PROCESS
-    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //---TX LINE---
     virtual task automatic uart_tx_process();
@@ -70,7 +90,7 @@ class scoreboard;
             uart_rsp_item item;
             bit [7:0] expected;
 
-            uart_tx_mbs.get(item);
+            uart_tx_mbx.get(item);
 
             if (tx_expected_q.size() == 0) begin
                 fail++;
@@ -104,13 +124,37 @@ class scoreboard;
         end
     endtask
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //RUN 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    virtual task run();
+        fork
+            apb_process();
+            uart_tx_process();
+            uart_rx_process();
+        join_none
+    endtask
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    //REPORT
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    virtual function automatic void report();
+
+        $display("");
+        $display("========================================");
+        $display(" FINAL TEST SUMMARY");
+        $display("========================================");
+        $display(" PASS            = %0d", pass);
+        $display(" FAIL            = %0d", fail);
+        $display("========================================");
+
+        if ((fail == 0) && (pass > 0) && (tx_expected_q.size() == 0) && (rx_expected_q.size() == 0))
+            $display("ALL TESTS PASSED");
+        else
+            $display("BETTER LUCK NEXT TIME");
+
+    endfunction
     
-
-
-
-
-
-
 endclass
 
 `endif
