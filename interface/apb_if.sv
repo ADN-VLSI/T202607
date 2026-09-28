@@ -100,6 +100,7 @@ interface apb_if #(
     addr  = paddr;
     write = pwrite;
     data  = (write) ? pwdata : prdata;
+    slverr = pslverr;
   endtask
 
   task automatic write(input logic [ADDR_WIDTH-1:0] addr, input logic [DATA_WIDTH-1:0] wdata);
