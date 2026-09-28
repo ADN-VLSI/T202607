@@ -7,23 +7,15 @@
 import uart_regif_pkg::ADDR_TXD;
 import uart_regif_pkg::ADDR_RXD;
 
-//--------------------------------------------------------------------------------------------------
-// TX PATH : CPU writes TXD        => expected
-//           byte appears on tx_o  => actual
-//
-// RX PATH : byte driven on rx_i   => expected
-//           CPU reads RXD         => actual
-//--------------------------------------------------------------------------------------------------
-
 class scoreboard;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // FIELDS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  mailbox #(apb_rsp_item)  apb_mbx;      // apb_monitor        -> scoreboard
-  mailbox #(uart_rsp_item) uart_tx_mbx;  // monitor on tx line -> scoreboard
-  mailbox #(uart_rsp_item) uart_rx_mbx;  // monitor on rx line -> scoreboard
+  mailbox #(apb_rsp_item)  apb_mbx;    
+  mailbox #(uart_rsp_item) uart_tx_mbx;
+  mailbox #(uart_rsp_item) uart_rx_mbx;
 
   bit [7:0] tx_expected_q[$];
   bit [7:0] rx_expected_q[$];
@@ -127,7 +119,7 @@ class scoreboard;
   endtask
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  // RX LINE : whatever we drove into the DUT becomes an expectation
+  // RX LINE : whatever we drive into the DUT becomes an expectation
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   virtual task automatic uart_rx_process();
@@ -174,9 +166,6 @@ class scoreboard;
     else $display(" SOME TESTS FAILED");
 
     $display("========================================");
-
   endfunction
-
 endclass
-
 `endif

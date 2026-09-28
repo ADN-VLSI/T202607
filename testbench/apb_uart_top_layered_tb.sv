@@ -35,7 +35,7 @@ module apb_uart_top_layered_tb;
   localparam int BaudRate = 115200;
 
   // Register values built from the package structs : no manual bit packing
-  localparam uart_cfg_t CfgReg = '{
+  localparam uart_cfg_t cnfg_reg = '{
       reserved: '0,
       extra_stop: 1'b0,
       parity_type: 1'b0,
@@ -44,7 +44,7 @@ module apb_uart_top_layered_tb;
       baud_div: 16'(ClkFreq / BaudRate)
   };
 
-  localparam uart_ctrl_t CtrlReg = '{
+  localparam uart_ctrl_t ctrl_reg = '{
       reserved: '0,
       rx_flush: 1'b0,
       tx_flush: 1'b0,
@@ -197,8 +197,8 @@ module apb_uart_top_layered_tb;
     sb.run();
 
     //---- 1. Configure the DUT
-    gen.apb_write(ADDR_CFG, 32'(CfgReg));
-    gen.apb_write(ADDR_CTRL, 32'(CtrlReg));
+    gen.apb_write(ADDR_CFG, 32'(cnfg_reg));
+    gen.apb_write(ADDR_CTRL, 32'(ctrl_reg));
     apb_intf.wait_till_idle();
 
     //---- 2. TX path : APB write -> DUT -> tx line
@@ -213,7 +213,7 @@ module apb_uart_top_layered_tb;
 
     //---- 3. RX path : rx line -> DUT -> APB read
     gen.uart_send(8'h5A, BaudRate);
-    #(2 * FrameTime);  // let the DUT finish receiving
+    #(2 * FrameTime);  
     gen.apb_read(ADDR_RXD);
     apb_intf.wait_till_idle();
 
@@ -221,13 +221,29 @@ module apb_uart_top_layered_tb;
     #(2 * FrameTime);
     gen.apb_read(ADDR_RXD);
     apb_intf.wait_till_idle();
-
+    
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // SHUTDOWN PHASE
+    // RANDOM STIMULUS PHASE
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    repeat (10) begin
+      gen.random_uart_tx();
+      #(2 * FrameTime);
+    end
 
     apb_intf.wait_till_idle();
-    #(2 * FrameTime);
+
+    // Full Duplex Test: TX and RX active at the same time
+    gen.apb_write(ADDR_TXD, 32'hC3);
+    gen.uart_send(8'h96, BaudRate);
+    #(3 * FrameTime);
+    gen.apb_read(ADDR_RXD);
+    apb_intf.wait_till_idle();
+
+    //---- 5. FIFO burst : write many bytes back to back, no gap
+    
+    repeat (8) gen.random_uart_tx();
+    apb_intf.wait_till_idle();
+    #(10 * FrameTime);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // REPORT PHASE
@@ -237,5 +253,4 @@ module apb_uart_top_layered_tb;
 
     $finish;
   end
-
 endmodule
