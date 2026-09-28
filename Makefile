@@ -7,9 +7,10 @@ LOG_DIR := $(CURDIR)/log
 
 FILELIST += -i $(CURDIR)/include
 FILELIST += -i $(CURDIR)/package
-FILELIST += $(shell find $(CURDIR)/interface -name "*.sv")
-FILELIST += $(shell find $(CURDIR)/source -name "*.sv")
-FILELIST += $(shell find $(CURDIR)/testbench -name "*.sv")
+FILELIST += -i $(CURDIR)/testbench
+FILELIST += $(shell find $(CURDIR)/interface -mindepth 1 -maxdepth 1 -name "*.sv")
+FILELIST += $(shell find $(CURDIR)/source    -mindepth 1 -maxdepth 1 -name "*.sv")
+FILELIST += $(shell find $(CURDIR)/testbench -mindepth 1 -maxdepth 1 -name "*.sv")
 
 EW_O := | grep -iE "Error:|Warning:" --color=auto || true
 EWHL := | grep -iE "Error:|Warning:|" --color=auto
@@ -30,7 +31,7 @@ $(BUILD_DIR)/snap_$(TOP):
 	@make -s $(BUILD_DIR)
 	@make -s $(LOG_DIR)
 	@echo -e "\033[1;33m>\033[0m Compiling $(TOP)..."
-	@cd $(BUILD_DIR) && $(XVLOG) -sv $(FILELIST) -log $(LOG_DIR)/xvlog_$(shell date +%Y%m%d_%H%M%S).log $(EW_O)
+	@cd $(BUILD_DIR) && $(XVLOG) -sv $(FILELIST) -L uvm -log $(LOG_DIR)/xvlog_$(shell date +%Y%m%d_%H%M%S).log $(EW_O)
 	@cd $(BUILD_DIR) && $(XELAB) $(TOP) -s snap_$(TOP) -debug all -log $(LOG_DIR)/xelab_$(TOP)_$(shell date +%Y%m%d_%H%M%S).log $(EW_O)
 	@echo "" > $(BUILD_DIR)/snap_$(TOP)
 
@@ -45,7 +46,7 @@ run:
 .PHONY: all
 all:
 	@make -s clean
-	@make -s run TN=$(TN) TR=$(TR)
+	@make -s run TOP=$(TOP) TN=$(TN) TR=$(TR)
 
 .PHONY: clean
 clean:

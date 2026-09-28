@@ -1,0 +1,35 @@
+`ifndef __GUARD_APB_AGENT_SV__
+`define __GUARD_APB_AGENT_SV__ 0
+
+`include "apb_uart_top_uvm_tb/cmp/apb_driver.sv"
+`include "apb_uart_top_uvm_tb/cmp/apb_monitor.sv"
+
+class apb_agent extends uvm_agent;
+
+  `uvm_component_utils(apb_agent)
+
+  function new (string name = "apb_agent", uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+
+  uvm_analysis_port #(apb_rsp_item) ap;
+
+  uvm_sequencer     #(apb_seq_item) sqr;
+  apb_driver                        dvr;
+  apb_monitor                       mon;
+
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    ap = new("ap", this);
+    sqr = uvm_sequencer#(apb_seq_item)::type_id::create("sqr", this);
+    dvr = apb_driver::type_id::create("dvr", this);
+    mon = apb_monitor::type_id::create("mon", this);
+  endfunction
+
+  virtual function void connect_phase(uvm_phase phase);
+    mon.ap.connect(ap);
+  endfunction
+
+endclass
+
+`endif
