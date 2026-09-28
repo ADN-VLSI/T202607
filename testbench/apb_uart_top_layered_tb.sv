@@ -87,11 +87,6 @@ module apb_uart_top_layered_tb;
   uart_monitor             uart_rx_mon;
   scoreboard               sb;
 
-  uart_driver uart_dvr;
-  uart_monitor uart_mon;
-
-  scoreboard scbd;
-
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // RTL
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,17 +141,9 @@ module apb_uart_top_layered_tb;
     uart_rx_mon     = new();
     sb              = new();
 
-    uart_dvr = new();
-    uart_mon = new();
-
-    scbd = new();
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // CONNECT PHASE
     ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    gen.set_apb_mailbox(apb_dvr_mbx);
-    gen.set_uart_mailbox(uart_dvr_mbx);
 
     apb_dvr.set_interface(apb_intf);
     apb_mon.set_interface(apb_intf);
@@ -189,15 +176,6 @@ module apb_uart_top_layered_tb;
     rx_intf.parity_en   = 0;
     rx_intf.parity_type = 0;
     rx_intf.extra_stop  = 0;
-
-    uart_dvr.set_interface(rx_intf);
-    uart_mon.set_interface(tx_intf);
-    uart_dvr.set_mailbox(uart_dvr_mbx);
-    uart_mon.set_mailbox(uart_mon_mbx);
-
-    scbd.set_apb_mailbox(apb_mon_mbx);
-    scbd.set_uart_mailbox(uart_mon_mbx);
-    scbd.set_interface(tx_intf);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // RESET PHASE
@@ -267,7 +245,12 @@ module apb_uart_top_layered_tb;
     apb_intf.wait_till_idle();
     #(10 * FrameTime);
 
-    #5ms;
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // SHUTDOWN PHASE
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+    apb_intf.wait_till_idle();
+    #(2 * FrameTime);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // REPORT PHASE
@@ -276,6 +259,5 @@ module apb_uart_top_layered_tb;
     sb.report();
 
     $finish;
-
   end
 endmodule

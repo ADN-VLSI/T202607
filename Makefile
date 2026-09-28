@@ -8,9 +8,14 @@ LOG_DIR := $(CURDIR)/log
 FILELIST += -i $(CURDIR)/include
 FILELIST += -i $(CURDIR)/package
 FILELIST += -i $(CURDIR)/testbench
+FILELIST += -i $(CURDIR)/deprecated
 FILELIST += $(shell find $(CURDIR)/interface -mindepth 1 -maxdepth 1 -name "*.sv")
 FILELIST += $(shell find $(CURDIR)/source    -mindepth 1 -maxdepth 1 -name "*.sv")
-FILELIST += $(shell find $(CURDIR)/testbench -mindepth 1 -maxdepth 1 -name "*.sv")
+TB_FILES := $(shell find $(CURDIR)/testbench -mindepth 1 -maxdepth 1 -name "*.sv")
+ifneq ($(TOP),apb_uart_top_uvm_tb)
+TB_FILES := $(filter-out %/apb_uart_top_uvm_tb.sv,$(TB_FILES))
+endif
+FILELIST += $(TB_FILES)
 
 EW_O := | grep -iE "Error:|Warning:" --color=auto || true
 EWHL := | grep -iE "Error:|Warning:|" --color=auto
