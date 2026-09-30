@@ -3,6 +3,7 @@
 import uvm_pkg::*;
 
 `include "apb_uart_top_uvm_tb/test/apb_uart_base_test.sv"
+`include "apb_uart_top_uvm_tb/test/apb_uart_write_test.sv"
 
 module apb_uart_top_uvm_tb;
 
@@ -47,6 +48,7 @@ module apb_uart_top_uvm_tb;
   end
 
   initial begin
+    string test_name;
     $timeformat(-9, 0, "ns");
     $dumpfile("apb_uart_top_uvm_tb.vcd");
     $dumpvars(0, apb_uart_top_uvm_tb);
@@ -56,7 +58,13 @@ module apb_uart_top_uvm_tb;
     uvm_config_db#(virtual uart_if)::set(uvm_root::get(), "*.env.tx.*", "tx_intf", tx_intf);
     uvm_config_db#(virtual uart_if)::set(uvm_root::get(), "*.env.rx.*", "rx_intf", rx_intf);
 
-    run_test("apb_uart_base_test");
+    if ($value$plusargs("UVM_TESTNAME=%s", test_name)) begin
+      run_test(test_name);
+    end else if ($value$plusargs("CLI_TEST_NAME=%s", test_name) && test_name != "default") begin
+      run_test(test_name);
+    end else begin
+      run_test("apb_uart_base_test");
+    end
   end
 
 endmodule

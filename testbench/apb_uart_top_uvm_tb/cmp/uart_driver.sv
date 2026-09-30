@@ -33,6 +33,7 @@ class uart_driver extends uvm_driver #(uart_seq_item);
           req.data_bits
         );
         phase.drop_objection(this);
+        seq_item_port.item_done();
       end
     join_none
   endtask

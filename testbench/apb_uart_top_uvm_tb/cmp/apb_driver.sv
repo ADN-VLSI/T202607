@@ -28,6 +28,7 @@ class apb_driver extends uvm_driver #(apb_seq_item);
         phase.raise_objection(this);
         intf.do_transaction(req.addr, req.we, req.data, dummy_data, dummy_resp);
         phase.drop_objection(this);
+        seq_item_port.item_done();
       end
     join_none
   endtask
