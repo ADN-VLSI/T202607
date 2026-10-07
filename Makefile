@@ -20,8 +20,8 @@ TB_FILES := $(filter-out %/apb_uart_top_layered_tb.sv,$(TB_FILES))
 endif
 FILELIST += $(TB_FILES)
 
-EW_O := | grep -a -iE "Error:|Warning:" --color=auto || true
-EWHL := | grep -a -iE "Error:|Warning:|" --color=auto
+EW_O := | sed "/XSIM 43-4468/d" | grep -a -iE "Error:|Warning:" --color=auto || true
+EWHL := | sed "/XSIM 43-4468/d" | grep -a -iE "Error:|Warning:|" --color=auto
 
 $(BUILD_DIR) $(LOG_DIR):
 	@echo -e "\033[1;33m>\033[0m Creating $@ directory..."

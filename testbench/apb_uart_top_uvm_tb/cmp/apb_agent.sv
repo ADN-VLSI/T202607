@@ -27,6 +27,7 @@ class apb_agent extends uvm_agent;
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
+    dvr.seq_item_port.connect(sqr.seq_item_export);
     mon.ap.connect(ap);
   endfunction
 

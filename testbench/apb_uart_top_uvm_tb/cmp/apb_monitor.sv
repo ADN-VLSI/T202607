@@ -21,7 +21,7 @@ class apb_monitor extends uvm_monitor;
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
-    if(!uvm_config_db#(virtual apb_if)::get(this, "", "apb_intf", intf)) begin
+    if(!uvm_config_db#(virtual apb_if)::get(this, "", "intf", intf)) begin
       `uvm_fatal("NOVIF", "Virtual interface not found")
     end
   endfunction

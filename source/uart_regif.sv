@@ -57,7 +57,7 @@ module uart_regif
         return res;
     endfunction
 
-    always_ff @(posedge clk or negedge arst_n)
+    always_ff @(posedge clk or negedge arst_n) 
     begin
         if(!arst_n)
         begin
@@ -120,11 +120,11 @@ module uart_regif
     begin
         read_data = '0;
         case(maddr)
-            ADDR_CTRL:   read_data = DATA_WIDTH'(ctrl_o);
-            ADDR_CFG:    read_data = DATA_WIDTH'(cfg_o);
-            ADDR_STATUS: read_data = DATA_WIDTH'(status);
-            ADDR_RXD:    read_data[7:0] = rx_data_i;
-            ADDR_INTR:   read_data = DATA_WIDTH'(intr_o);
+            ADDR_CTRL:   read_data = {'0, ctrl_o};
+            ADDR_CFG:    read_data = {'0, cfg_o};
+            ADDR_STATUS: read_data = {'0, status};
+            ADDR_RXD:    read_data = {'0, rx_data_i};
+            ADDR_INTR:   read_data = {'0, intr_o};
             default:     read_data = '0;
         endcase
     end

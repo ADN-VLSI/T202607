@@ -20,9 +20,6 @@ class apb_uart_env extends uvm_env;
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    uvm_config_db#(uvm_active_passive_enum)::set(this, "tx", "is_active", UVM_PASSIVE);
-    uvm_config_db#(uvm_active_passive_enum)::set(this, "rx", "is_active", UVM_ACTIVE);
-
     apb  = apb_agent::type_id::create("apb", this);
     tx   = uart_agent::type_id::create("tx", this);
     rx   = uart_agent::type_id::create("rx", this);
@@ -31,8 +28,6 @@ class apb_uart_env extends uvm_env;
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    apb.dvr.seq_item_port.connect(apb.sqr.seq_item_export);
-
     apb.ap.connect(scbd.apb_imp);
     tx.ap.connect(scbd.uart_tx_imp);
     rx.ap.connect(scbd.uart_rx_imp);

@@ -40,23 +40,28 @@ module apb_uart_top_uvm_tb;
   );
 
   initial begin
-    ctrl_intf.start_clock(100_000_000);
-  end
-
-  initial begin
-    ctrl_intf.apply_reset();
-  end
-
-  initial begin
     string test_name;
     $timeformat(-9, 0, "ns");
     $dumpfile("apb_uart_top_uvm_tb.vcd");
     $dumpvars(0, apb_uart_top_uvm_tb);
 
-    uvm_config_db#(virtual ctrl_if)::set(uvm_root::get(), "*.env.ctrl.*", "ctrl_intf", ctrl_intf);
-    uvm_config_db#(virtual apb_if)::set(uvm_root::get(),  "*.env.apb.*", "apb_intf", apb_intf);
-    uvm_config_db#(virtual uart_if)::set(uvm_root::get(), "*.env.tx.*", "tx_intf", tx_intf);
-    uvm_config_db#(virtual uart_if)::set(uvm_root::get(), "*.env.rx.*", "rx_intf", rx_intf);
+
+    uvm_config_db#(virtual ctrl_if)::set(uvm_root::get(), "*.env.ctrl.*", "intf", ctrl_intf);
+    uvm_config_db#(virtual apb_if)::set(uvm_root::get(), "*.env.apb.*", "intf", apb_intf);
+    uvm_config_db#(virtual uart_if)::set(uvm_root::get(), "*.env.tx.*", "intf", tx_intf);
+    uvm_config_db#(virtual uart_if)::set(uvm_root::get(), "*.env.rx.*", "intf", rx_intf);
+
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "baud_rate", 115200);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "parity_en", 0);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "parity_type", 0);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "extra_stop", 0);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "data_bits", 8);
+
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "baud_rate", 115200);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "parity_en", 0);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "parity_type", 0);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "extra_stop", 0);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "data_bits", 8);
 
     if ($value$plusargs("UVM_TESTNAME=%s", test_name)) begin
       run_test(test_name);

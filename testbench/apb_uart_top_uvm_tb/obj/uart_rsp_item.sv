@@ -5,6 +5,12 @@
 
 class uart_rsp_item extends uart_seq_item;
 
+  // rand logic [7:0] data;
+  // rand int         baud_rate;
+  // rand bit         parity_en;
+  // rand bit         parity_type;
+  // rand bit         extra_stop;
+  // rand int         data_bits;
   bit parity;
 
   `uvm_object_utils_begin(uart_rsp_item)
@@ -22,6 +28,7 @@ class uart_rsp_item extends uart_seq_item;
   endfunction
 
   virtual function automatic string to_string();
+    // "data=0x%02h baud_rate=%-7d parity_en=%0b parity_type=%0b extra_stop=%0b data_bits=%0d",
     return $sformatf("%s parity=%0b", super.to_string(), parity);
   endfunction
 

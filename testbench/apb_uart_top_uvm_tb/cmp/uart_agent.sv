@@ -22,17 +22,13 @@ class uart_agent extends uvm_agent;
     super.build_phase(phase);
     ap = new("ap", this);
     mon = uart_monitor::type_id::create("mon", this);
-    if (get_is_active() == UVM_ACTIVE) begin
-      sqr = uvm_sequencer#(uart_seq_item)::type_id::create("sqr", this);
-      dvr = uart_driver::type_id::create("dvr", this);
-    end
+    sqr = uvm_sequencer#(uart_seq_item)::type_id::create("sqr", this);
+    dvr = uart_driver::type_id::create("dvr", this);
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
     mon.ap.connect(ap);
-    if (get_is_active() == UVM_ACTIVE) begin
-      dvr.seq_item_port.connect(sqr.seq_item_export);
-    end
+    dvr.seq_item_port.connect(sqr.seq_item_export);
   endfunction
 
 endclass

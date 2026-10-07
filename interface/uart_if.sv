@@ -33,6 +33,11 @@ interface uart_if;
   // METHOD
   /////////////////////////////////////////////////////////
 
+  task automatic apply_reset();
+    drv <= 0;
+    val <= 1;
+  endtask
+
   /* verilog_format: off */
   task automatic send(
     input int data,
@@ -109,7 +114,7 @@ interface uart_if;
     data_bits = DATA_BITS;
 
     wait (line == 0);  // Wait for start bit
-    
+
     // Start bit check
     #(tp / 2);
     if (line != 0) begin
@@ -131,7 +136,19 @@ interface uart_if;
     // Stop bit
     #(tp);
     if (line != 1) begin
-      $error("UART: Stop bit not detected. Probably Baud rate mismatch / protocol violation / configuration mismatch");
+      $error(
+          "UART: Stop bit not detected. Probably Baud rate mismatch / protocol violation / configuration mismatch");
+    end
+
+  endtask
+
+  task automatic wait_till_idle(int x = 10);
+    realtime tp;
+    tp = 1s / baud_rate;
+
+    for (int i = 0; i < x; i++) begin
+      #(tp);
+      if (line == 0) i = 0;
     end
 
   endtask

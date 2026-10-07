@@ -14,7 +14,7 @@ class uart_driver extends uvm_driver #(uart_seq_item);
   virtual uart_if intf;
 
   virtual function void connect_phase(uvm_phase phase);
-    if(!uvm_config_db#(virtual uart_if)::get(this, "", "rx_intf", intf)) begin
+    if(!uvm_config_db#(virtual uart_if)::get(this, "", "intf", intf)) begin
       `uvm_fatal("NOVIF", "Virtual interface not found")
     end
   endfunction

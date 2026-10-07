@@ -24,7 +24,7 @@ class uart_seq_item extends uvm_sequence_item;
   endfunction
 
   constraint baud_rate_c {
-    baud_rate inside {[9600:115200]};
+    soft baud_rate inside {9600, 19200, 38400, 57600, 115200, 2000000, 8000000};
   }
 
   constraint data_bits_c {
@@ -34,7 +34,7 @@ class uart_seq_item extends uvm_sequence_item;
 
   virtual function automatic string to_string();
     return $sformatf(
-      "data=0x%02h baud_rate=%0d parity_en=%0b parity_type=%0b extra_stop=%0b data_bits=%0d",
+      "data=0x%02h baud_rate=%-7d parity_en=%0b parity_type=%0b extra_stop=%0b data_bits=%0d",
       data,
       baud_rate,
       parity_en,

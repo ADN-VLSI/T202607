@@ -21,9 +21,7 @@ class uart_monitor extends uvm_monitor;
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
-    if (!uvm_config_db#(virtual uart_if)::get(this, "", "tx_intf", intf) &&
-        !uvm_config_db#(virtual uart_if)::get(this, "", "rx_intf", intf) &&
-        !uvm_config_db#(virtual uart_if)::get(this, "", "uart_intf", intf)) begin
+    if(!uvm_config_db#(virtual uart_if)::get(this, "", "intf", intf)) begin
       `uvm_fatal("NOVIF", "Virtual interface not found")
     end
   endfunction
@@ -32,14 +30,10 @@ class uart_monitor extends uvm_monitor;
     fork
       forever begin
         uart_rsp_item item;
-        int data;
-        bit parity;
 
         item = new();
-        intf.recv(data, parity);
+        intf.recv(item.data, item.parity);
 
-        item.data        = data[7:0];
-        item.parity      = parity;
         item.baud_rate   = intf.baud_rate;
         item.parity_en   = intf.parity_en;
         item.parity_type = intf.parity_type;
