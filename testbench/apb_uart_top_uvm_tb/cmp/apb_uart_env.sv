@@ -1,8 +1,8 @@
 `ifndef __GUARD_APB_UART_ENV_SV__
 `define __GUARD_APB_UART_ENV_SV__ 0
 
-`include "apb_uart_top_uvm_tb/cmp/apb_agent.sv"
-`include "apb_uart_top_uvm_tb/cmp/uart_agent.sv"
+`include "apb_uart_top_uvm_tb/cmp/apb/apb_agent.sv"
+`include "apb_uart_top_uvm_tb/cmp/uart/uart_agent.sv"
 `include "apb_uart_top_uvm_tb/cmp/apb_uart_scbd.sv"
 
 class apb_uart_env extends uvm_env;

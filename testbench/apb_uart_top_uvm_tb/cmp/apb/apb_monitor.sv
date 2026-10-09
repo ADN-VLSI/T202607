@@ -1,7 +1,7 @@
 `ifndef __GUARD_APB_MONITOR_SV__
 `define __GUARD_APB_MONITOR_SV__ 0
 
-`include "apb_uart_top_uvm_tb/obj/apb_rsp_item.sv"
+`include "apb_uart_top_uvm_tb/obj/apb/apb_rsp_item.sv"
 
 class apb_monitor extends uvm_monitor;
 

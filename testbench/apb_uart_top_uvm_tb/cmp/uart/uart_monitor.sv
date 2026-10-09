@@ -1,7 +1,7 @@
 `ifndef __GUARD_UART_MONITOR_SV__
 `define __GUARD_UART_MONITOR_SV__ 0
 
-`include "apb_uart_top_uvm_tb/obj/uart_rsp_item.sv"
+`include "apb_uart_top_uvm_tb/obj/uart/uart_rsp_item.sv"
 
 class uart_monitor extends uvm_monitor;
 
