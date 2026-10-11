@@ -180,22 +180,6 @@ class apb_uart_scbd extends uvm_scoreboard;
     end
     $display("========================================");
 
-    `uvm_info(get_type_name(), "", UVM_NONE)
-    `uvm_info(get_type_name(), "========================================", UVM_NONE)
-    `uvm_info(get_type_name(), "       FINAL TEST SUMMARY               ", UVM_NONE)
-    `uvm_info(get_type_name(), "========================================", UVM_NONE)
-    `uvm_info(get_type_name(), $sformatf(" PASS            = %0d", pass), UVM_NONE)
-    `uvm_info(get_type_name(), $sformatf(" FAIL            = %0d", fail), UVM_NONE)
-    `uvm_info(get_type_name(), "========================================", UVM_NONE)
-
-    if (fail == 0 && pass > 0 && tx_expected_q.size() == 0 && rx_expected_q.size() == 0) begin
-      `uvm_info(get_type_name(), " ALL TESTS PASSED", UVM_NONE)
-    end else if (pass == 0 && fail == 0) begin
-      `uvm_info(get_type_name(), " NO TRANSACTIONS CHECKED", UVM_NONE)
-    end else begin
-      `uvm_error(get_type_name(), " SOME TESTS FAILED")
-    end
-    `uvm_info(get_type_name(), "========================================", UVM_NONE)
   endfunction : report_phase
 
 endclass
