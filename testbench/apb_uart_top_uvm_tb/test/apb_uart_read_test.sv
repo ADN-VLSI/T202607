@@ -15,45 +15,52 @@ class apb_uart_read_test extends apb_uart_base_test;
     super.new(name, parent);
   endfunction : new
 
-  virtual task run_phase(uvm_phase phase);
-    super.run_phase(phase);
-    phase.raise_objection(this);
-    `uvm_info(get_type_name(), "Basic read test started", UVM_LOW)
-    begin
-        apb_uart_init_seq init_seq;
-        init_seq = apb_uart_init_seq::type_id::create("init_seq");
-        init_seq.start(env.apb.sqr);
-    end
+    virtual function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    if (rx_intf != null)
+        rx_intf.baud_rate = 115200;
+    endfunction
 
-    begin  // SEND APB
-      // Perform randomized APB reads from UART RX
-      random_uart_rx_seq uart_rx_seq;
-      uvm_config_db#(int)::set(uvm_root::get(), "parameter", "RANDOM_UART_RX_SEQ_LENGTH", 10);
-      uart_rx_seq = random_uart_rx_seq::type_id::create("uart_rx_seq");
-      uart_rx_seq.start(env.rx.sqr);
-    end
+virtual task run_phase(uvm_phase phase);
+  super.run_phase(phase);
+  phase.raise_objection(this);
+  `uvm_info(get_type_name(), "Basic read test started", UVM_LOW)
 
-    fork
-      // Wait for interfaces to be idle
-      apb_intf.wait_till_idle();
-      rx_intf.wait_till_idle();
-    join
+  // 1. Init
+  begin
+    apb_uart_init_seq init_seq;
+    init_seq = apb_uart_init_seq::type_id::create("init_seq");
+    init_seq.start(env.apb.sqr);
+  end
 
-    begin 
-        random_apb_rdata_seq apb_rdata_seq;
-        uvm_config_db#(int)::set(uvm_root::get(), "parameter", "RANDOM_APB_RDATA_SEQ_LENGTH", 10);
-        apb_rdata_seq = random_apb_rdata_seq::type_id::create("apb_rdata_seq");
-        apb_rdata_seq.start(env.apb.sqr);
-    end
-    fork
-      // Wait for interfaces to be idle
-      apb_intf.wait_till_idle();
-      rx_intf.wait_till_idle();
-    join
 
-    `uvm_info(get_type_name(), "Basic read test completed", UVM_LOW)
-    phase.drop_objection(this);
-  endtask : run_phase
+  begin
+    random_uart_rx_seq uart_rx_seq;
+    uvm_config_db#(int)::set(uvm_root::get(), "parameter", "RANDOM_UART_RX_SEQ_LENGTH", 40);
+    uart_rx_seq = random_uart_rx_seq::type_id::create("uart_rx_seq");
+    uart_rx_seq.start(env.rx.sqr);
+  end
+
+  fork
+    rx_intf.wait_till_idle(20);
+    apb_intf.wait_till_idle(20);
+  join
+
+  begin
+    random_apb_rdata_seq apb_rdata_seq;
+    uvm_config_db#(int)::set(uvm_root::get(), "parameter", "RANDOM_APB_RDATA_SEQ_LENGTH", 40);
+    apb_rdata_seq = random_apb_rdata_seq::type_id::create("apb_rdata_seq");
+    apb_rdata_seq.start(env.apb.sqr);
+  end
+
+  // 5. Final drain
+  fork
+    apb_intf.wait_till_idle();
+    rx_intf.wait_till_idle();
+  join
+  `uvm_info(get_type_name(), "Basic read test completed", UVM_LOW)
+  phase.drop_objection(this);
+endtask
 endclass : apb_uart_read_test
 
 `endif
