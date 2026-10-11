@@ -1,8 +1,8 @@
 `ifndef __GUARD_UART_AGENT_SV__
 `define __GUARD_UART_AGENT_SV__ 0
 
-`include "apb_uart_top_uvm_tb/cmp/uart_driver.sv"
-`include "apb_uart_top_uvm_tb/cmp/uart_monitor.sv"
+`include "apb_uart_top_uvm_tb/cmp/uart/uart_driver.sv"
+`include "apb_uart_top_uvm_tb/cmp/uart/uart_monitor.sv"
 
 class uart_agent extends uvm_agent;
 

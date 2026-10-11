@@ -1,8 +1,8 @@
 `ifndef __GUARD_APB_AGENT_SV__
 `define __GUARD_APB_AGENT_SV__ 0
 
-`include "apb_uart_top_uvm_tb/cmp/apb_driver.sv"
-`include "apb_uart_top_uvm_tb/cmp/apb_monitor.sv"
+`include "apb_uart_top_uvm_tb/cmp/apb/apb_driver.sv"
+`include "apb_uart_top_uvm_tb/cmp/apb/apb_monitor.sv"
 
 class apb_agent extends uvm_agent;
 

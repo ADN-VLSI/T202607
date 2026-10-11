@@ -12,8 +12,8 @@ import uart_regif_pkg::ADDR_TXD;
 import uart_regif_pkg::ADDR_RXD;
 import uart_regif_pkg::ADDR_INTR;
 
-`include "apb_uart_top_uvm_tb/obj/apb_rsp_item.sv"
-`include "apb_uart_top_uvm_tb/obj/uart_rsp_item.sv"
+`include "apb_uart_top_uvm_tb/obj/apb/apb_rsp_item.sv"
+`include "apb_uart_top_uvm_tb/obj/uart/uart_rsp_item.sv"
 
 // Declare analysis implementation suffixes for APB, UART TX, and UART RX
 `uvm_analysis_imp_decl(_apb)

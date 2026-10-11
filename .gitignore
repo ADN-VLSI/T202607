@@ -1,0 +1,14 @@
+# Build & Log directories
+build/
+log/
+
+# Vivado simulation artifacts
+xsim.dir/
+*.log
+*.jou
+*.pb
+*.vcd
+*.wdb
+*.sdb
+*.psdb
+*.rlx
