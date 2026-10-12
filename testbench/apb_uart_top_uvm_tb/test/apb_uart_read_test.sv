@@ -17,8 +17,9 @@ class apb_uart_read_test extends apb_uart_base_test;
 
     virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    if (rx_intf != null)
-        rx_intf.baud_rate = 115200;
+    if (!uvm_config_db#(int)::get(uvm_root::get(), "*", "baud_rate", rx_intf.baud_rate)) begin
+      `uvm_fatal("NOVIF", "Virtual interface not found")
+    end
     endfunction
 
 virtual task run_phase(uvm_phase phase);

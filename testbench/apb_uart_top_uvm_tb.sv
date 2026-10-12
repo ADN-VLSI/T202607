@@ -7,6 +7,11 @@ import uvm_pkg::*;
 `include "apb_uart_top_uvm_tb/test/apb_uart_write_test.sv"
 
 module apb_uart_top_uvm_tb;
+  localparam int BAUD_RATE   = 115200;
+  localparam int PARITY_EN   = 0;
+  localparam int PARITY_TYPE = 0;
+  localparam int EXTRA_STOP  = 0;
+  localparam int DATA_BITS   = 8;
 
   ctrl_if ctrl_intf ();
 
@@ -52,17 +57,19 @@ module apb_uart_top_uvm_tb;
     uvm_config_db#(virtual uart_if)::set(uvm_root::get(), "*.env.tx.*", "intf", tx_intf);
     uvm_config_db#(virtual uart_if)::set(uvm_root::get(), "*.env.rx.*", "intf", rx_intf);
 
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "baud_rate", 115200);
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "parity_en", 0);
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "parity_type", 0);
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "extra_stop", 0);
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "data_bits", 8);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "baud_rate", BAUD_RATE);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "parity_en", PARITY_EN);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "parity_type", PARITY_TYPE);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "extra_stop", EXTRA_STOP);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.tx.*", "data_bits", DATA_BITS);
 
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "baud_rate", 115200);
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "parity_en", 0);
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "parity_type", 0);
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "extra_stop", 0);
-    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "data_bits", 8);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "baud_rate", BAUD_RATE);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "parity_en", PARITY_EN);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "parity_type", PARITY_TYPE);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "extra_stop", EXTRA_STOP);
+    uvm_config_db#(int)::set(uvm_root::get(), "*.env.rx.*", "data_bits", DATA_BITS);
+    uvm_config_db#(int)::set(uvm_root::get(), "*", "baud_rate", BAUD_RATE);
+
 
     if ($value$plusargs("UVM_TESTNAME=%s", test_name)) begin
       run_test(test_name);

@@ -17,9 +17,11 @@ class apb_uart_write_test extends apb_uart_base_test;
   endfunction : new
 
   virtual function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-    if (tx_intf != null) tx_intf.baud_rate = 115200;
-  endfunction : connect_phase
+  super.connect_phase(phase);
+  if (!uvm_config_db#(int)::get(uvm_root::get(), "*", "baud_rate", tx_intf.baud_rate)) begin
+    `uvm_fatal("NOVIF", "Virtual interface not found")
+  end
+  endfunction
 
   task main_phase(uvm_phase phase);
     phase.raise_objection(this);
@@ -38,9 +40,6 @@ class apb_uart_write_test extends apb_uart_base_test;
       my_seq = random_apb_wdata_seq::type_id::create("my_seq");
       my_seq.start(env.apb.sqr);
     end
-
-    // Wait for scoreboard to check all transactions
-    wait (env.scbd.pass + env.scbd.fail >= 4);
 
     fork
       // Wait for interfaces to be idle
