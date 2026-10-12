@@ -40,6 +40,10 @@ class apb_uart_scbd extends uvm_scoreboard;
   bit [7:0] tx_expected_q[$];
   bit [7:0] rx_expected_q[$];
 
+  bit [31:0] ctrl_model = 32'h0000_0000;
+  bit [31:0] cfg_model  = 32'h0003_28B0;
+  bit [31:0] intr_model = 32'h0000_0000;
+
   // Verification pass/fail counters
   int pass = 0;
   int fail = 0;
@@ -66,6 +70,8 @@ class apb_uart_scbd extends uvm_scoreboard;
   // APB Transaction Handler
   // --------------------------------------------------------------------------------------------
   virtual function void write_apb(apb_rsp_item item);
+    bit [31:0] expected;
+
     `uvm_info(get_type_name(), $sformatf("Received APB item: %s", item.to_string()), UVM_HIGH)
 
     // Ignore transactions with slave error
@@ -99,12 +105,38 @@ class apb_uart_scbd extends uvm_scoreboard;
       end
     end
 
-    // Informational logging for configuration register writes
-    else if (item.we === 1'b1 && item.addr == ADDR_CFG) begin
-      `uvm_info(get_type_name(), $sformatf("APB CFG write: 0x%08h", item.data), UVM_HIGH)
-    end
+    // Model readable/writable UART registers. CTRL flush bits are write pulses
+    // and read back as zero after the write cycle.
     else if (item.we === 1'b1 && item.addr == ADDR_CTRL) begin
-      `uvm_info(get_type_name(), $sformatf("APB CTRL write: 0x%08h", item.data), UVM_HIGH)
+      ctrl_model = item.data & 32'h0000_0003;
+      `uvm_info(get_type_name(), $sformatf("SCB: CTRL model = 0x%08h", ctrl_model), UVM_HIGH)
+    end
+    else if (item.we === 1'b1 && item.addr == ADDR_CFG) begin
+      cfg_model = item.data & 32'h001F_FFFF;
+      `uvm_info(get_type_name(), $sformatf("SCB: CFG model = 0x%08h", cfg_model), UVM_HIGH)
+    end
+    else if (item.we === 1'b1 && item.addr == ADDR_INTR) begin
+      intr_model = item.data & 32'h0000_000F;
+      `uvm_info(get_type_name(), $sformatf("SCB: INTR model = 0x%08h", intr_model), UVM_HIGH)
+    end
+    else if (item.we === 1'b0 &&
+             (item.addr == ADDR_CTRL || item.addr == ADDR_CFG || item.addr == ADDR_INTR)) begin
+      case (item.addr)
+        ADDR_CTRL: expected = ctrl_model;
+        ADDR_CFG:  expected = cfg_model;
+        ADDR_INTR: expected = intr_model;
+        default:   expected = '0;
+      endcase
+
+      if (item.data === expected) begin
+        pass++;
+        `uvm_info(get_type_name(), $sformatf("PASS: Register 0x%02h readback = 0x%08h",
+                  item.addr, item.data), UVM_LOW)
+      end else begin
+        fail++;
+        `uvm_error(get_type_name(), $sformatf("FAIL: Register 0x%02h readback mismatch! Expected 0x%08h, got 0x%08h",
+                   item.addr, expected, item.data))
+      end
     end
   endfunction : write_apb
 
