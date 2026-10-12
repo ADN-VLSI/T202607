@@ -3,6 +3,7 @@
 import uvm_pkg::*;
 
 `include "apb_uart_top_uvm_tb/test/apb_uart_base_test.sv"
+`include "apb_uart_top_uvm_tb/test/apb_uart_read_test.sv"
 `include "apb_uart_top_uvm_tb/test/apb_uart_write_test.sv"
 
 module apb_uart_top_uvm_tb;

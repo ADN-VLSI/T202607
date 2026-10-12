@@ -45,6 +45,14 @@ class uart_monitor extends uvm_monitor;
     join_none
   endtask
 
+  task set_config();
+    void'(uvm_config_db#(int)::get(null, "", "uart_baud_rate",   intf.baud_rate));
+    void'(uvm_config_db#(bit)::get(null, "", "uart_parity_en",   intf.parity_en));
+    void'(uvm_config_db#(bit)::get(null, "", "uart_parity_type", intf.parity_type));
+    void'(uvm_config_db#(bit)::get(null, "", "uart_extra_stop",  intf.extra_stop));
+    void'(uvm_config_db#(int)::get(null, "", "uart_data_bits",   intf.data_bits));
+  endtask
+
 endclass
 
 `endif

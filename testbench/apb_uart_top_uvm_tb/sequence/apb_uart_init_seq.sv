@@ -16,7 +16,7 @@ class apb_uart_init_seq extends uvm_sequence #(apb_seq_item);
     `uvm_do_with(req, {we == 1; addr == 'h00; data == 'b110;})
     `uvm_do_with(req, {we == 1; addr == 'h00; data == 'b000;})
     `uvm_do_with(req, {we == 1; addr == 'h04; data == 32'h0003_0364;})
-    `uvm_do_with(req, {we == 1; addr == 'h00; data == 'b001;})
+    `uvm_do_with(req, {we == 1; addr == 'h00; data == 'b0011;})
   endtask
 
 endclass : apb_uart_init_seq
